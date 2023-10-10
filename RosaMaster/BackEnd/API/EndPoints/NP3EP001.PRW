@@ -1,0 +1,137 @@
+#Include 'Protheus.ch'
+#Include 'FWMVCDEF.ch'
+#Include 'RestFul.CH'
+#INCLUDE "TOTVS.CH"
+#INCLUDE "TopConn.ch"
+#INCLUDE 'COLORS.CH'
+#INCLUDE 'FONT.CH'
+#INCLUDE 'RWMAKE.CH'
+#INCLUDE "TBICONN.CH"
+#include "parmtype.ch"
+#INCLUDE "FWADAPTEREAI.CH"
+#Include "TBICODE.CH"
+#include 'fileio.ch'
+/*
+#---------------------------------------------------------------#
+| Programa:| NP3EP001                          Data:10/10/2023  |
+|---------------------------------------------------------------|
+| Autor:   | NP3 Tecnologia                                     |
+|---------------------------------------------------------------|
+| Objetivo:| Classe do execauto de cliente                      |
+|---------------------------------------------------------------|
+|                        ALTERAÇÕES                             |
+|---------------------------------------------------------------|
+|     Analista      |   Data     |  Motivo                      |
+|---------------------------------------------------------------|
+|                   |            |                              |
+|                   |            |                              |
+#---------------------------------------------------------------#
+LINK TDN: ** NÃO TEM **
+*/
+CLASS NP3EP001
+    DATA aDados as array
+    DATA cErro as String
+    DATA cMsg as String
+    DATA cRotina as String
+    METHOD New(oJson,aAux,cRotina) CONSTRUCTOR
+    METHOD IsExist(cCGC)
+    METHOD Create()
+    METHOD Mvc()
+    METHOD ExcAuto()
+ENDCLASS
+
+// Construtor
+METHOD New(oJson,aAux,cRotina) CLASS NP3EP001
+    Local i
+    // Verifica se já existe o Cliente
+    If !IsExist(oJson:GetJsonText("A1_CGC"))
+        // Inicia as variaveis
+        ::aDados := {}
+        ::cErro := ""
+        ::cMsg := ""
+        ::cRotina := "MVC"//cRotina
+        // Captura as informações do Json
+        For i := 1 to Len(aAux)
+            If oJson:GetJsonText(aAux[i])
+                aAdd(::aDados, {aAux[i], oJson:GetJsonText(aAux[i]), Nil})
+            EndIF
+        Next     
+        // Ordena o array
+        If Len(::aDados) > 0
+            ::aDados := FWVetByDic(::aDados, "SA1")
+        EndIf
+    EndIf
+RETURN
+
+// Valida se cliente existe
+METHOD IsExist(cCGC) CLASS NP3EP001
+    Local lRet := .f.
+    // Procura cliente
+    DbSelectArea("SA1")
+    SA1->(DbSetOrder(3))//A1_FILIAL+A1_CGC
+    If SA1->(DbSeek(xFilial('SA1')+Padr(cCGC,TamSx3("A1_CGC")[1])))
+        lRet := .t.
+    EndIf
+RETURN lRet
+
+// Cria o cliente
+METHOD Create() CLASS NP3EP001
+    Local lRet := .f.
+    // Escolha da rotina utilizada
+    If AllTrim(UPPER(::cRotina)) == "MVC"
+        lRet := ::Mvc()
+    Else
+        lRet := ::ExecAuto()
+    EndIf
+RETURN lRet
+
+// Executa cadastro MVC
+METHOD Mvc() CLASS NP3EP001
+    Local lRet := .F.  
+    Local i
+    Local aErro := {}
+    If Len(::aDados) > 0
+        //Pegando o modelo de dados, setando a operação de inclusão
+        oModel := FWLoadModel("MATA030")
+        oModel:SetOperation(3)
+        oModel:Activate()
+        //Pegando o model dos campos da SA1
+        oSA1Mod:= oModel:getModel("MATA030_SA1")
+        // Seta os valores
+        For i := 1 to Len(::aDados)
+            oSA1Mod:setValue(::aDados[i][1],::aDados[i][2]) 
+        Next
+        //Se conseguir validar as informações
+        If oModel:VldData()
+            //Tenta realizar o Commit
+            If oModel:CommitData()
+                lRet := .T.
+                ::cMsg := "Cadastro de Cliente - Cadastrado com Sucesso" 
+            //Se não deu certo, altera a variável para false
+            Else
+                lRet := .F.
+            EndIf   
+        //Se não conseguir validar as informações, altera a variável para false
+        Else
+            lRet := .F.
+        EndIf
+        //Se não deu certo a inclusão, mostra a mensagem de erro
+        If ! lRet
+            //Busca o Erro do Modelo de Dados
+            aErro := oModel:GetErrorMessage()
+            //Monta o Texto que será mostrado na tela
+            ::cErro += "Id do formulário de origem:"  + ' [' + AllToChar(aErro[01]) + ']'
+            ::cErro += "Id do campo de origem: "      + ' [' + AllToChar(aErro[02]) + ']'
+            ::cErro += "Id do formulário de erro: "   + ' [' + AllToChar(aErro[03]) + ']'
+            ::cErro += "Id do campo de erro: "        + ' [' + AllToChar(aErro[04]) + ']'
+            ::cErro += "Id do erro: "                 + ' [' + AllToChar(aErro[05]) + ']'
+            ::cErro += "Mensagem do erro: "           + ' [' + AllToChar(aErro[06]) + ']'
+            ::cErro += "Mensagem da solução: "        + ' [' + AllToChar(aErro[07]) + ']'
+            ::cErro += "Valor atribuído: "            + ' [' + AllToChar(aErro[08]) + ']'
+            ::cErro += "Valor anterior: "             + ' [' + AllToChar(aErro[09]) + ']'
+            ::cErro += ""+CRLF
+        EndIf
+        //Desativa o modelo de dados
+        oModel:DeActivate()
+    EndIf
+RETURN lRet
