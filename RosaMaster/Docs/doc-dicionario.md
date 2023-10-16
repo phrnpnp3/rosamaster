@@ -3,52 +3,408 @@
 Esse documento tem a funcionalidade de mapear todo o dicionário de dados utilizados no projeto do cliente RosaMaster
 
 ## Tabelas
+ZZ5010-Regra de Comissao(C,C,C)
 
 ## Índices
+ZZ5010 1-ZZ5_FILIAL+ZZ5_CODIGO+ZZ5_GRUPO
+
+ZZ5010 2-ZZ5_FILIAL+ZZ5_GRUPO+ZZ5_INIVI
 
 ## Campos
 
 ### Tabelas Customizas
-Z01_COD
+ZZ5_CODIGO
 
 [
-Campo:
-Tipo:
-Tamanho:
-Decimal:
-Picure:
+CAMPO
+    -Tipo: 1-Caracter
+    -Tamanho: 6
+    -Decimal: 0
+    -Formato:
+    -Contexto: Real
+    -Propriedade: Visualizar
+INFORMAÇÕES
+    -Titulo: Codigo
+    -Descição: Codigo
+    -Help:
+OPÇÕES
+    -Lista:
+    -Ini Padrão: GETSXENUM("ZZ5","ZZ5_CODIGO")
+    -Ini Browse:
+    -Modo Edição:
+    -Cons Padrão:
+VALIDAÇÕES
+    -Val Usuário:
+    -Val Sistema:
+    -Nivel:
+USO
+    -Obrigatório:
+    -Usado: Sim
+    -Browse: Sim
 ]: #
 
-Z01_DESC
+ZZ5_GRUPO 
 
 [
-Campo:
-Tipo:
-Tamanho:
-Decimal:
-Picure:
+CAMPO
+    -Tipo: 1-Caracter
+    -Tamanho: 4
+    -Decimal: 0
+    -Formato:
+    -Contexto: Real
+    -Propriedade: Alterar
+INFORMAÇÕES
+    -Titulo: Grupo Produt
+    -Descição: Grupo de Produto
+    -Help:
+OPÇÕES
+    -Lista:
+    -Ini Padrão:
+    -Ini Browse:
+    -Modo Edição:
+    -Cons Padrão: SBM
+VALIDAÇÕES
+    -Val Usuário: ExistCpo("SBM",M->ZZ5_GRUPO)
+    -Val Sistema:
+    -Nivel:
+USO
+    -Obrigatório: Sim
+    -Usado: Sim
+    -Browse: Sim
+]: #
+
+ZZ5_DESCR 
+
+[
+CAMPO
+    -Tipo: 1-Caracter
+    -Tamanho: 100
+    -Decimal: 0
+    -Formato:
+    -Contexto: Virtual
+    -Propriedade: Visualizar
+INFORMAÇÕES
+    -Titulo: Desc. Grupo 
+    -Descição: Descricao Grupo
+    -Help:
+OPÇÕES
+    -Lista:
+    -Ini Padrão: IIF(!INCLUI,POSICIONE("SBM",1,xFilial("SBM)+M->ZZ5_GRUPO,"BM_DESC"),'')
+    -Ini Browse: POSICIONE("SBM",1,xFilial("SBM)+ZZ5->ZZ5_GRUPO,"BM_DESC")
+    -Modo Edição:
+    -Cons Padrão:
+VALIDAÇÕES
+    -Val Usuário:
+    -Val Sistema:
+    -Nivel:
+USO
+    -Obrigatório:
+    -Usado: Sim
+    -Browse: Sim
+]: #
+
+ZZ5_PVEND 
+
+[
+CAMPO
+    -Tipo: 2-Numérico
+    -Tamanho: 5
+    -Decimal: 2
+    -Formato: @E 99.99
+    -Contexto: Real
+    -Propriedade: Alterar
+INFORMAÇÕES
+    -Titulo: % Vendedor
+    -Descição: % Vendedor
+    -Help:
+OPÇÕES
+    -Lista:
+    -Ini Padrão:
+    -Ini Browse:
+    -Modo Edição:
+    -Cons Padrão:
+VALIDAÇÕES
+    -Val Usuário: positivo() .and. FwFldGet("ZZ5_PVEND") <= 100
+    -Val Sistema:
+    -Nivel:
+USO
+    -Obrigatório:
+    -Usado: Sim
+    -Browse: 
+]: #
+
+ZZ5_PCONF 
+
+[
+CAMPO
+    -Tipo: 2-Numérico
+    -Tamanho: 5
+    -Decimal: 2
+    -Formato: @E 99.99
+    -Contexto: Real
+    -Propriedade: Alterar
+INFORMAÇÕES
+    -Titulo: % Confecao  
+    -Descição: % Confecao  
+    -Help:
+OPÇÕES
+    -Lista:
+    -Ini Padrão:
+    -Ini Browse:
+    -Modo Edição:
+    -Cons Padrão:
+VALIDAÇÕES
+    -Val Usuário: positivo() .and. FwFldGet("ZZ5_PCONF") <= 100
+    -Val Sistema:
+    -Nivel:
+USO
+    -Obrigatório:
+    -Usado: Sim
+    -Browse: 
+]: #
+
+ZZ5_PAUXI  
+
+[
+CAMPO
+    -Tipo: 2-Numérico
+    -Tamanho: 5
+    -Decimal: 2
+    -Formato: @E 99.99
+    -Contexto: Real
+    -Propriedade: Alterar
+INFORMAÇÕES
+    -Titulo: %Aux. Conf   
+    -Descição: % Auxiliar de Confecao   
+    -Help:
+OPÇÕES
+    -Lista:
+    -Ini Padrão:
+    -Ini Browse:
+    -Modo Edição:
+    -Cons Padrão:
+VALIDAÇÕES
+    -Val Usuário: positivo() .and. FwFldGet("ZZ5_PAUXI") <= 100
+    -Val Sistema:
+    -Nivel:
+USO
+    -Obrigatório:
+    -Usado: Sim
+    -Browse: 
+]: #
+
+ZZ5_PTECN   
+
+[
+CAMPO
+    -Tipo: 2-Numérico
+    -Tamanho: 5
+    -Decimal: 2
+    -Formato: @E 99.99
+    -Contexto: Real
+    -Propriedade: Alterar
+INFORMAÇÕES
+    -Titulo: % Tecnico   
+    -Descição: % Tecnico   
+    -Help:
+OPÇÕES
+    -Lista:
+    -Ini Padrão:
+    -Ini Browse:
+    -Modo Edição:
+    -Cons Padrão:
+VALIDAÇÕES
+    -Val Usuário: positivo() .and. FwFldGet("ZZ5_PTECN") <= 100
+    -Val Sistema:
+    -Nivel:
+USO
+    -Obrigatório:
+    -Usado: Sim
+    -Browse: 
+]: #
+
+ZZ5_PCOND    
+
+[
+CAMPO
+    -Tipo: 2-Numérico
+    -Tamanho: 5
+    -Decimal: 2
+    -Formato: @E 99.99
+    -Contexto: Real
+    -Propriedade: Alterar
+INFORMAÇÕES
+    -Titulo: % Condutor   
+    -Descição: % Condutor  
+    -Help:
+OPÇÕES
+    -Lista:
+    -Ini Padrão:
+    -Ini Browse:
+    -Modo Edição:
+    -Cons Padrão:
+VALIDAÇÕES
+    -Val Usuário: positivo() .and. FwFldGet("ZZ5_PCOND") <= 100
+    -Val Sistema:
+    -Nivel:
+USO
+    -Obrigatório:
+    -Usado: Sim
+    -Browse: 
+]: #
+
+ZZ5_PAGEN     
+
+[
+CAMPO
+    -Tipo: 2-Numérico
+    -Tamanho: 5
+    -Decimal: 2
+    -Formato: @E 99.99
+    -Contexto: Real
+    -Propriedade: Alterar
+INFORMAÇÕES
+    -Titulo: % Agente    
+    -Descição: % Agente    
+    -Help:
+OPÇÕES
+    -Lista:
+    -Ini Padrão:
+    -Ini Browse:
+    -Modo Edição:
+    -Cons Padrão:
+VALIDAÇÕES
+    -Val Usuário: positivo() .and. FwFldGet("ZZ5_PAGEN") <= 100
+    -Val Sistema:
+    -Nivel:
+USO
+    -Obrigatório:
+    -Usado: Sim
+    -Browse: 
+]: #
+
+ZZ5_PSUPE      
+
+[
+CAMPO
+    -Tipo: 2-Numérico
+    -Tamanho: 5
+    -Decimal: 2
+    -Formato: @E 99.99
+    -Contexto: Real
+    -Propriedade: Alterar
+INFORMAÇÕES
+    -Titulo: % Supervisor
+    -Descição: % Supervisor
+    -Help:
+OPÇÕES
+    -Lista:
+    -Ini Padrão:
+    -Ini Browse:
+    -Modo Edição:
+    -Cons Padrão:
+VALIDAÇÕES
+    -Val Usuário: positivo() .and. FwFldGet("ZZ5_PSUPE") <= 100
+    -Val Sistema:
+    -Nivel:
+USO
+    -Obrigatório:
+    -Usado: Sim
+    -Browse: 
+]: #
+
+ZZ5_INIVI       
+
+[
+CAMPO
+    -Tipo: 4-Data
+    -Tamanho: 8
+    -Decimal: 0
+    -Formato:
+    -Contexto: Real
+    -Propriedade: Alterar
+INFORMAÇÕES
+    -Titulo: Ini Vigencia
+    -Descição: Inicio de Vigencia       
+    -Help:
+OPÇÕES
+    -Lista:
+    -Ini Padrão:
+    -Ini Browse:
+    -Modo Edição:
+    -Cons Padrão:
+VALIDAÇÕES
+    -Val Usuário: 
+    -Val Sistema:
+    -Nivel:
+USO
+    -Obrigatório:
+    -Usado: Sim
+    -Browse: 
+]: #
+
+ZZ5_MAXAG        
+
+[
+CAMPO
+    -Tipo: 2-Numérico
+    -Tamanho: 1
+    -Decimal: 0
+    -Formato: 9
+    -Contexto: Real
+    -Propriedade: Alterar
+INFORMAÇÕES
+    -Titulo: Max. Agentes
+    -Descição: Max. Agentes
+    -Help:
+OPÇÕES
+    -Lista:
+    -Ini Padrão:
+    -Ini Browse:
+    -Modo Edição:
+    -Cons Padrão:
+VALIDAÇÕES
+    -Val Usuário: FwFldGet("ZZ5_MAXAG")==1 .or. FwFldGet("ZZ5_MAXAG")==2
+    -Val Sistema:
+    -Nivel:
+USO
+    -Obrigatório:
+    -Usado: Sim
+    -Browse: 
+]: #
+
+ZZ5_MAXTE        
+
+[
+CAMPO
+    -Tipo: 2-Numérico
+    -Tamanho: 1
+    -Decimal: 0
+    -Formato: 9
+    -Contexto: Real
+    -Propriedade: Alterar
+INFORMAÇÕES
+    -Titulo: Max Tecnicos
+    -Descição: Max Tecnicos
+    -Help:
+OPÇÕES
+    -Lista:
+    -Ini Padrão:
+    -Ini Browse:
+    -Modo Edição:
+    -Cons Padrão:
+VALIDAÇÕES
+    -Val Usuário: FwFldGet("ZZ5_MAXTE")==1 .or. FwFldGet("ZZ5_MAXTE")==2
+    -Val Sistema:
+    -Nivel:
+USO
+    -Obrigatório:
+    -Usado: Sim
+    -Browse: 
 ]: #
 
 ### Tabelas Padrões
-C5_XCOD
 
-[
-Campo:
-Tipo:
-Tamanho:
-Decimal:
-Picure:
-]: #
-
-C5_XDESC
-
-[
-Campo:
-Tipo:
-Tamanho:
-Decimal:
-Picure:
-]: #
 ## Gatilhos
 
 ## Consulta Padrão
