@@ -89,8 +89,8 @@ INFORMAÇÕES
     -Help:
 OPÇÕES
     -Lista:
-    -Ini Padrão: IIF(!INCLUI,POSICIONE("SBM",1,xFilial("SBM)+M->ZZ5_GRUPO,"BM_DESC"),'')
-    -Ini Browse: POSICIONE("SBM",1,xFilial("SBM)+ZZ5->ZZ5_GRUPO,"BM_DESC")
+    -Ini Padrão: IIF(!INCLUI,POSICIONE("SBM",1,xFilial("SBM")+ZZ5->ZZ5_GRUPO,"BM_DESC"),'')
+    -Ini Browse: POSICIONE("SBM",1,xFilial("SBM")+ZZ5->ZZ5_GRUPO,"BM_DESC")
     -Modo Edição:
     -Cons Padrão:
 VALIDAÇÕES
@@ -338,7 +338,7 @@ VALIDAÇÕES
     -Val Sistema:
     -Nivel:
 USO
-    -Obrigatório:
+    -Obrigatório: Sim
     -Usado: Sim
     -Browse: 
 ]: #
