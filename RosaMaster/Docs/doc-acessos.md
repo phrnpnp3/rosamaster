@@ -11,7 +11,7 @@ Wasley Santos   | np3.wasleysantos
 Gabriel Paiva   | np3.gabrielpaiva
 Raphael Neves   | np3.raphaelneves
 
-Todos estão com a senha: Np3Tecn0log1@
+Todos estão com a senha: 12345678
 
 ## Fluig
 
