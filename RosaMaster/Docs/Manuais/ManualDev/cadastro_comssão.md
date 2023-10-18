@@ -13,5 +13,6 @@
 ### Legendas
 ![legendas](https://github.com/phrnpnp3/rosamaster/blob/JLS/RosaMaster/Docs/Miscelanea/imagens/cadastro_de_comissao_legendas.PNG?raw=true)
 ### Chave duplicada
+![duplicado](https://github.com/phrnpnp3/rosamaster/blob/JLS/RosaMaster/Docs/Miscelanea/imagens/cadastro_de_comissao_duplicado.PNG?raw=true)
 ### Alterar: se não tiver sido usada
 ### Excluir: se não tiver sido usada
