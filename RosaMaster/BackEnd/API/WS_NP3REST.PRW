@@ -125,13 +125,14 @@ WSMETHOD POST LISTA WSSERVICE NP3REST
 
 Return .T.
 
-//Methodo post para Gravação da HML Digital e Fisica
+//Methodo post para Gravação de Cliente
 WSMETHOD POST CLIENTE WSSERVICE NP3REST
 	Local cJson     := Self:GetContent()
 	Local oJson		:= JsonObject():New()
 	Local oRet      := JsonObject():New()
 	Local lRet 		:= .F.
 	Local oCliente
+	Local cRotina	:= ""
 	PRIVATE cError     := ""
 	PRIVATE oLastError := ErrorBlock( { |e| cError := e:ErrorStack, Break(e) } )
 
@@ -142,12 +143,13 @@ WSMETHOD POST CLIENTE WSSERVICE NP3REST
 		oJson := JsonObject():New()
 		oRet := oJson:FromJson(cJson)
 		aAux := oJson:GetNames()
-		// Cria o bojeto e executa a rotina TODO: Validar no json se será MVC ou Execauto
+		cRotina	:= oJson:GetJsonText("ROTINA")
+		// Cria o bojeto e executa a rotina 
 		oCliente:New(oJson,aAux,cRotina)
 		lRet := oCliente:Create()
 
 	END SEQUENCE
-	if !empty(cError)
+	if !empty(oCliente:cErro)
 		self:setStatus(400)
 		SetRestFault(400, EncodeUTF8( oCliente:cErro ), .T.,400)
 	else

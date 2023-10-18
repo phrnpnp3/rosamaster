@@ -33,6 +33,7 @@ CLASS NP3EP001
     DATA cErro as String
     DATA cMsg as String
     DATA cRotina as String
+    DATA lExist as Boolean
     METHOD New(oJson,aAux,cRotina) CONSTRUCTOR
     METHOD IsExist(cCGC)
     METHOD Create()
@@ -44,7 +45,8 @@ ENDCLASS
 METHOD New(oJson,aAux,cRotina) CLASS NP3EP001
     Local i
     // Verifica se já existe o Cliente
-    If !IsExist(oJson:GetJsonText("A1_CGC"))
+    lExist := !IsExist(oJson:GetJsonText("A1_CGC"))
+    If !lExist
         // Inicia as variaveis
         ::aDados := {}
         ::cErro := ""
@@ -52,7 +54,7 @@ METHOD New(oJson,aAux,cRotina) CLASS NP3EP001
         ::cRotina := "MVC"//cRotina
         // Captura as informações do Json
         For i := 1 to Len(aAux)
-            If oJson:GetJsonText(aAux[i])
+            If oJson:GetJsonText(aAux[i]) .and. AllTrim(aAux[i]) <>"ROTINA"
                 aAdd(::aDados, {aAux[i], oJson:GetJsonText(aAux[i]), Nil})
             EndIF
         Next     
@@ -60,6 +62,8 @@ METHOD New(oJson,aAux,cRotina) CLASS NP3EP001
         If Len(::aDados) > 0
             ::aDados := FWVetByDic(::aDados, "SA1")
         EndIf
+    Else
+        ::cMsg := "Cadastro de Cliente - Já cadastrado" 
     EndIf
 RETURN
 
@@ -90,7 +94,8 @@ METHOD Mvc() CLASS NP3EP001
     Local lRet := .F.  
     Local i
     Local aErro := {}
-    If Len(::aDados) > 0
+    // Se tiver dados e se não existir
+    If Len(::aDados) > 0 .and. !lExist
         //Pegando o modelo de dados, setando a operação de inclusão
         oModel := FWLoadModel("MATA030")
         oModel:SetOperation(3)
@@ -133,5 +138,11 @@ METHOD Mvc() CLASS NP3EP001
         EndIf
         //Desativa o modelo de dados
         oModel:DeActivate()
+    Else    
+        IF lExist
+            lRet := .t.
+        Else
+            ::cErro += "Cadastro de Cliente - Erro nos dados"
+        EndIf
     EndIf
 RETURN lRet
