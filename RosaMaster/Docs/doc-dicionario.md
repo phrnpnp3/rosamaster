@@ -5,10 +5,20 @@ Esse documento tem a funcionalidade de mapear todo o dicionário de dados utiliz
 ## Tabelas
 ZZ5010-Regra de Comissao(C,C,C)
 
+ZZ6010-Veículos(C,C,C)
+
+ZZ7010-Filiais de Serviço(C,C,C)
+
 ## Índices
 ZZ5010 1-ZZ5_FILIAL+ZZ5_CODIGO+ZZ5_GRUPO
 
 ZZ5010 2-ZZ5_FILIAL+ZZ5_GRUPO+ZZ5_INIVI
+
+ZZ6010 1-ZZ6_FILIAL+ZZ6_FILSER
+
+ZZ6010 2-ZZ6_FILIAL+ZZ6_EXESER
+
+ZZ7010 1-ZZ7010 1-ZZ7_FILIAL+ZZ7_CODIGO
 
 ## Campos
 
@@ -325,7 +335,7 @@ CAMPO
     -Propriedade: Alterar
 INFORMAÇÕES
     -Titulo: Ini Vigencia
-    -Descição: Inicio de Vigencia       
+    -Descição: Inicio de Vigencia
     -Help:
 OPÇÕES
     -Lista:
@@ -401,6 +411,186 @@ USO
     -Obrigatório:
     -Usado: Sim
     -Browse: 
+]: #
+
+ZZ6_FILSER
+
+[
+CAMPO
+    -Tipo: 1-Caracter
+    -Tamanho: 6
+    -Decimal: 0
+    -Formato:
+    -Contexto: Real
+    -Propriedade: Alterar
+INFORMAÇÕES
+    -Titulo: Filial
+    -Descição: Filial
+    -Help:
+OPÇÕES
+    -Lista:
+    -Ini Padrão:
+    -Ini Browse:
+    -Modo Edição:
+    -Cons Padrão: SM0
+VALIDAÇÕES
+    -Val Usuário: ExistCpo("SM0",cEmpAnt+FwFldGet("ZZ6_FILSER"))
+    -Val Sistema:
+    -Nivel:
+USO
+    -Obrigatório:Sim
+    -Usado: Sim
+    -Browse: Sim
+]: #
+
+ZZ6_DESFIL
+
+[
+CAMPO
+    -Tipo: 1-Caracter
+    -Tamanho: 100
+    -Decimal: 0
+    -Formato:
+    -Contexto: Virtual
+    -Propriedade: Visualizar
+INFORMAÇÕES
+    -Titulo: Descricao
+    -Descição: Descricao
+    -Help:
+OPÇÕES
+    -Lista:
+    -Ini Padrão: IIF(!INCLUI,POSICIONE("SM0",1,cEmpAnt+ZZ6->ZZ6_FILSER,"M0_FILIAL"),'')
+    -Ini Browse: POSICIONE("SM0",1,cEmpAnt+ZZ6->ZZ6_FILSER,"M0_FILIAL")
+    -Modo Edição:
+    -Cons Padrão:
+VALIDAÇÕES
+    -Val Usuário:
+    -Val Sistema:
+    -Nivel:
+USO
+    -Obrigatório:
+    -Usado: Sim
+    -Browse: Sim
+]: #
+
+ZZ6_EXESER
+
+[
+CAMPO
+    -Tipo: 1-Caracter
+    -Tamanho: 1
+    -Decimal: 0
+    -Formato:
+    -Contexto: Real
+    -Propriedade: Alterar
+INFORMAÇÕES
+    -Titulo: Exe Servico?
+    -Descição: Exe Servico?
+    -Help:
+OPÇÕES
+    -Lista: S=Sim;N=Não
+    -Ini Padrão:
+    -Ini Browse:
+    -Modo Edição:
+    -Cons Padrão:
+VALIDAÇÕES
+    -Val Usuário:
+    -Val Sistema:
+    -Nivel:
+USO
+    -Obrigatório: Sim
+    -Usado: Sim
+    -Browse: Sim
+]: #
+
+ZZ7_CODIGO
+
+[
+CAMPO
+    -Tipo: 1-Caracter
+    -Tamanho: 6
+    -Decimal: 0
+    -Formato:
+    -Contexto: Real
+    -Propriedade: Alterar
+INFORMAÇÕES
+    -Titulo: Filial
+    -Descição: Filial
+    -Help:
+OPÇÕES
+    -Lista:
+    -Ini Padrão:
+    -Ini Browse:
+    -Modo Edição:
+    -Cons Padrão: SM0
+VALIDAÇÕES
+    -Val Usuário: ExistCpo("SM0",cEmpAnt+FwFldGet("ZZ7_CODIGO"))
+    -Val Sistema:
+    -Nivel:
+USO
+    -Obrigatório:Sim
+    -Usado: Sim
+    -Browse: Sim
+]: #
+
+ZZ7_DESCR
+
+[
+CAMPO
+    -Tipo: 1-Caracter
+    -Tamanho: 100
+    -Decimal: 0
+    -Formato:
+    -Contexto: Virtual
+    -Propriedade: Visualizar
+INFORMAÇÕES
+    -Titulo: Descricao
+    -Descição: Descricao
+    -Help:
+OPÇÕES
+    -Lista:
+    -Ini Padrão: IIF(!INCLUI,POSICIONE("SM0",1,cEmpAnt+ZZ6->ZZ7_CODIGO,"M0_FILIAL"),'')
+    -Ini Browse: POSICIONE("SM0",1,cEmpAnt+ZZ6->ZZ7_CODIGO,"M0_FILIAL")
+    -Modo Edição:
+    -Cons Padrão:
+VALIDAÇÕES
+    -Val Usuário:
+    -Val Sistema:
+    -Nivel:
+USO
+    -Obrigatório:
+    -Usado: Sim
+    -Browse: Sim
+]: #
+
+ZZ7_IDMOV
+
+[
+CAMPO
+    -Tipo: 1-Caracter
+    -Tamanho: 10
+    -Decimal: 0
+    -Formato:
+    -Contexto: Real
+    -Propriedade: Alterar
+INFORMAÇÕES
+    -Titulo: ID UMOV
+    -Descição: ID UMOV
+    -Help:
+OPÇÕES
+    -Lista:
+    -Ini Padrão:
+    -Ini Browse:
+    -Modo Edição:
+    -Cons Padrão:
+VALIDAÇÕES
+    -Val Usuário:
+    -Val Sistema:
+    -Nivel:
+USO
+    -Obrigatório:
+    -Usado: Sim
+    -Browse: Sim
 ]: #
 
 ### Tabelas Padrões
