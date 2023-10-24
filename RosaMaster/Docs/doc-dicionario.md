@@ -71,7 +71,7 @@ OPÇÕES
     -Lista:
     -Ini Padrão:
     -Ini Browse:
-    -Modo Edição:
+    -Modo Edição: INCLUI
     -Cons Padrão: SBM
 VALIDAÇÕES
     -Val Usuário: ExistCpo("SBM",M->ZZ5_GRUPO)
@@ -431,7 +431,7 @@ OPÇÕES
     -Lista:
     -Ini Padrão:
     -Ini Browse:
-    -Modo Edição:
+    -Modo Edição: INCLUI
     -Cons Padrão: SM0
 VALIDAÇÕES
     -Val Usuário: ExistCpo("SM0",cEmpAnt+FwFldGet("ZZ6_FILSER"))
@@ -521,7 +521,7 @@ OPÇÕES
     -Lista:
     -Ini Padrão:
     -Ini Browse:
-    -Modo Edição:
+    -Modo Edição: INCLUI
     -Cons Padrão: SM0
 VALIDAÇÕES
     -Val Usuário: ExistCpo("SM0",cEmpAnt+FwFldGet("ZZ7_CODIGO"))
@@ -549,8 +549,8 @@ INFORMAÇÕES
     -Help:
 OPÇÕES
     -Lista:
-    -Ini Padrão: IIF(!INCLUI,POSICIONE("SM0",1,cEmpAnt+ZZ6->ZZ7_CODIGO,"M0_FILIAL"),'')
-    -Ini Browse: POSICIONE("SM0",1,cEmpAnt+ZZ6->ZZ7_CODIGO,"M0_FILIAL")
+    -Ini Padrão: IIF(!INCLUI,POSICIONE("SM0",1,cEmpAnt+ZZ7->ZZ7_CODIGO,"M0_FILIAL"),'')
+    -Ini Browse: POSICIONE("SM0",1,cEmpAnt+ZZ7->ZZ7_CODIGO,"M0_FILIAL")
     -Modo Edição:
     -Cons Padrão:
 VALIDAÇÕES
@@ -596,6 +596,34 @@ USO
 ### Tabelas Padrões
 
 ## Gatilhos
+
+ZZ5_GRUPO 
+
+[
+Sequencia: 001
+Cnt. Dominio: ZZ5_DESCR 
+Tipo: 1-Primario
+Regra: POSICIONA("SBM",1,xFilial("SBM")+FwFldGet("BM_DESC"),"BM_DESC")
+Posiciona: 2-Nao
+Alias:
+Orden:
+Chave:
+Condicao:
+]: #
+
+ZZ6_FILSER
+
+[
+Sequencia: 001
+Cnt. Dominio: ZZ6_DESFIL 
+Tipo: 1-Primario
+Regra: FwFilialName(cEmpAnt,FwFldGet("ZZ6_FILSER"),1)
+Posiciona: 2-Nao
+Alias:
+Orden:
+Chave:
+Condicao:
+]: #
 
 ## Consulta Padrão
 
