@@ -1,4 +1,4 @@
-# Manual cadastro de comissão
+# Manual cadastro de filiais de serviços
 
 ## Funcional
 ### Incluir
