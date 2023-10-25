@@ -572,7 +572,7 @@ CAMPO
     -Decimal: 0
     -Formato:
     -Contexto: Real
-    -Propriedade: Alterar
+    -Propriedade: Visualizar
 INFORMAÇÕES
     -Titulo: ID UMOV
     -Descição: ID UMOV
@@ -618,6 +618,20 @@ Sequencia: 001
 Cnt. Dominio: ZZ6_DESFIL 
 Tipo: 1-Primario
 Regra: FwFilialName(cEmpAnt,FwFldGet("ZZ6_FILSER"),1)
+Posiciona: 2-Nao
+Alias:
+Orden:
+Chave:
+Condicao:
+]: #
+
+ZZ7_CODIGO
+
+[
+Sequencia: 001
+Cnt. Dominio: ZZ7_DESCR 
+Tipo: 1-Primario
+Regra: FwFilialName(cEmpAnt,FwFldGet("ZZ7_CODIGO"),1)
 Posiciona: 2-Nao
 Alias:
 Orden:
