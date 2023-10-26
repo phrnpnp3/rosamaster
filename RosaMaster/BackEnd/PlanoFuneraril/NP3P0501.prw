@@ -58,7 +58,7 @@ Static function ModelDef()
     Local oModel  := nil
     Local oZZ5 :=  FWFormStruct(1,'ZZ5')
     //instanciando o modelo de dados
-    oModel := MPFormModel():New('MDL1ZZ5',/*bPre*/,/*bPos*/{|oModel| P3P05012(oModel) },/*bCommit*/,/*bCancel*/)
+    oModel := MPFormModel():New('MDL1ZZ5',/*bPre*/,/*bPos*/{|oModel| P3P05012(oModel) },/*bCommit*/{|oModel| P3P05013(oModel) },/*bCancel*/)
     //formulario para o modelo de dados
     oModel:AddFields('ZZ5MASTER',,oZZ5)
     //Função para validar antes de abrir a tela
@@ -122,6 +122,13 @@ Static Function P3P05012(oModel)
     EndIf
 Return lOk
 
+// Depois do commit
+Static Function P3P05013(oModel)
+    Local lRet := .T.
+    FWFormCommit(oModel)
+    // atualiza variavel das legendas
+    dRet := P3P0501A()
+Return lRet
 /*-------------------------------------------------------Funções-------------------------------------------------------*/
 
 // Buscar a maior data de vigencia, menor ou igual a data atual
