@@ -603,7 +603,7 @@ ZZ5_GRUPO
 Sequencia: 001
 Cnt. Dominio: ZZ5_DESCR 
 Tipo: 1-Primario
-Regra: POSICIONA("SBM",1,xFilial("SBM")+FwFldGet("ZZ5_GRUPO"),"BM_DESC")
+Regra: POSICIONE("SBM",1,xFilial("SBM")+FwFldGet("ZZ5_GRUPO"),"BM_DESC")
 Posiciona: 2-Nao
 Alias:
 Orden:
