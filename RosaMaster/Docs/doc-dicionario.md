@@ -339,7 +339,7 @@ INFORMAÇÕES
     -Help:
 OPÇÕES
     -Lista:
-    -Ini Padrão:
+    -Ini Padrão: DATE()
     -Ini Browse:
     -Modo Edição:
     -Cons Padrão:
@@ -350,7 +350,7 @@ VALIDAÇÕES
 USO
     -Obrigatório: Sim
     -Usado: Sim
-    -Browse: 
+    -Browse: Sim
 ]: #
 
 ZZ5_MAXAG        
