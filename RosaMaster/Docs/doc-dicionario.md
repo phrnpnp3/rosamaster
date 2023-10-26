@@ -595,6 +595,126 @@ USO
 
 ### Tabelas Padrões
 
+UJC_XEND
+
+[
+CAMPO
+    -Tipo: 1-Caracter
+    -Tamanho: 100
+    -Decimal: 0
+    -Formato:
+    -Contexto: Real
+    -Propriedade: Alterar
+INFORMAÇÕES
+    -Titulo: Endereco
+    -Descição: Endereco
+    -Help:
+OPÇÕES
+    -Lista:
+    -Ini Padrão: 
+    -Ini Browse: 
+    -Modo Edição:
+    -Cons Padrão:
+VALIDAÇÕES
+    -Val Usuário:
+    -Val Sistema:
+    -Nivel:
+USO
+    -Obrigatório: Sim
+    -Usado: Sim
+    -Browse: Sim
+]: #
+
+UJC_XBAIRR
+
+[
+CAMPO
+    -Tipo: 1-Caracter
+    -Tamanho: 100
+    -Decimal: 0
+    -Formato:
+    -Contexto: Real
+    -Propriedade: Alterar
+INFORMAÇÕES
+    -Titulo: Bairro
+    -Descição: Bairro
+    -Help:
+OPÇÕES
+    -Lista:
+    -Ini Padrão: 
+    -Ini Browse: 
+    -Modo Edição:
+    -Cons Padrão:
+VALIDAÇÕES
+    -Val Usuário:
+    -Val Sistema:
+    -Nivel:
+USO
+    -Obrigatório: Sim
+    -Usado: Sim
+    -Browse: Sim
+]: #
+
+UJC_XCEP
+
+[
+CAMPO
+    -Tipo: 2-Numerico
+    -Tamanho: 8
+    -Decimal: 0
+    -Formato: @R 99999-999
+    -Contexto: Real
+    -Propriedade: Alterar
+INFORMAÇÕES
+    -Titulo: CEP
+    -Descição: CEP
+    -Help:
+OPÇÕES
+    -Lista:
+    -Ini Padrão: 
+    -Ini Browse: 
+    -Modo Edição:
+    -Cons Padrão:
+VALIDAÇÕES
+    -Val Usuário:
+    -Val Sistema:
+    -Nivel:
+USO
+    -Obrigatório: Sim
+    -Usado: Sim
+    -Browse: Sim
+]: #
+
+UJC_XCOMPL
+
+[
+CAMPO
+    -Tipo: 2-Numerico
+    -Tamanho: 8
+    -Decimal: 0
+    -Formato: @E 99,999,999
+    -Contexto: Real
+    -Propriedade: Alterar
+INFORMAÇÕES
+    -Titulo: Complemento
+    -Descição: Complemento
+    -Help:
+OPÇÕES
+    -Lista:
+    -Ini Padrão: 
+    -Ini Browse: 
+    -Modo Edição:
+    -Cons Padrão:
+VALIDAÇÕES
+    -Val Usuário:
+    -Val Sistema:
+    -Nivel:
+USO
+    -Obrigatório:
+    -Usado: Sim
+    -Browse:
+]: #
+
 ## Gatilhos
 
 ZZ5_GRUPO 
