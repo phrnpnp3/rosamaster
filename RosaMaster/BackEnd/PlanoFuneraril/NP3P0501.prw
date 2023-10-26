@@ -27,16 +27,14 @@ LINK TDN: ** NÃO TEM **
 */
 
 User Function NP3P0501()
-    Private dRet
     Private oBrowse := Nil
 	Private aRotina := MenuDef()
     Private CCAD := "Cadastro de Comissão"
-    dRet := P3P0501A()
     oBrowse := FWMBrowse():New()
     oBrowse:SetAlias("ZZ5")
     oBrowse:SetDescription(CCAD) 	
-    oBrowse:AddLegend( "ZZ5->ZZ5_INIVI == dRet", "BR_VERDE",    "Vigente" )
-    oBrowse:AddLegend( "ZZ5->ZZ5_INIVI <> dRet", "BR_VERMELHO", "Não Vigente" )
+    oBrowse:AddLegend( "U_P3P0501A()", "BR_VERDE",    "Vigente" )
+    oBrowse:AddLegend( "!U_P3P0501A()", "BR_VERMELHO", "Não Vigente" )
     oBrowse:Activate()
 Return
 
@@ -126,14 +124,12 @@ Return lOk
 Static Function P3P05013(oModel)
     Local lRet := .T.
     FWFormCommit(oModel)
-    // atualiza variavel das legendas
-    dRet := P3P0501A()
 Return lRet
 /*-------------------------------------------------------Funções-------------------------------------------------------*/
 
 // Buscar a maior data de vigencia, menor ou igual a data atual
-Static Function P3P0501A()
-    Local dRet := CTOD(Space(8))
+User Function P3P0501A()
+    Local aRet := {}//CTOD(Space(8))
     Local cAliasZZ5 := GetNextAlias()
     If Select(cAliasZZ5) <> 0
         (cAliasZZ5)->(DbCloseArea())
@@ -141,18 +137,20 @@ Static Function P3P0501A()
     
     BeginSql alias cAliasZZ5
 
-        Select MAX(ZZ5_INIVI) ZZ5_INIVI
+        Select ZZ5_GRUPO,MAX(ZZ5_INIVI) ZZ5_INIVI
         from %Table:ZZ5% ZZ5
         Where ZZ5_FILIAL = %Exp:xFilial("ZZ5")%
             and ZZ5_INIVI <= %Exp:DTOS(DATE())%
             and ZZ5.%notDel%
+        Group By ZZ5_GRUPO
     EndSql
     
-    If (cAliasZZ5)->(!EOF()) .and. !Empty((cAliasZZ5)->ZZ5_INIVI)
-        dRet := STOD((cAliasZZ5)->ZZ5_INIVI)
-    EndIf
+    While (cAliasZZ5)->(!EOF())
+        aAdd(aRet,(cAliasZZ5)->ZZ5_GRUPO+(cAliasZZ5)->ZZ5_INIVI)
+        (cAliasZZ5)->(DbSkip())
+    EndDo
     (cAliasZZ5)->(DbCloseArea())
-Return dRet
+Return aScan(aRet,{|x| x == ZZ5->ZZ5_GRUPO+DTOS(ZZ5->ZZ5_INIVI)}) > 0
 
 // Legandas
 User Function P3P0501B()
