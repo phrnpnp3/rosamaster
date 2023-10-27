@@ -5,9 +5,9 @@ Esse documento tem a funcionalidade de mapear todo o dicionário de dados utiliz
 ## Tabelas
 ZZ5010-Regra de Comissao(C,C,C)
 
-ZZ6010-Veículos(C,C,C)
+ZZ6010-Filiais de Serviço(C,C,C)
 
-ZZ7010-Filiais de Serviço(C,C,C)
+ZZ7010-Veículos(C,C,C)
 
 ## Índices
 ZZ5010 1-ZZ5_FILIAL+ZZ5_CODIGO+ZZ5_GRUPO
@@ -512,19 +512,19 @@ CAMPO
     -Decimal: 0
     -Formato:
     -Contexto: Real
-    -Propriedade: Alterar
+    -Propriedade: Visualizar
 INFORMAÇÕES
-    -Titulo: Filial
-    -Descição: Filial
+    -Titulo: Código
+    -Descição: Código
     -Help:
 OPÇÕES
     -Lista:
-    -Ini Padrão:
+    -Ini Padrão: GetSXENum("ZZ7","ZZ7_CODIGO")
     -Ini Browse:
-    -Modo Edição: INCLUI
-    -Cons Padrão: SM0
+    -Modo Edição:
+    -Cons Padrão:
 VALIDAÇÕES
-    -Val Usuário: ExistCpo("SM0",cEmpAnt+FwFldGet("ZZ7_CODIGO"))
+    -Val Usuário:
     -Val Sistema:
     -Nivel:
 USO
@@ -541,16 +541,16 @@ CAMPO
     -Tamanho: 100
     -Decimal: 0
     -Formato:
-    -Contexto: Virtual
-    -Propriedade: Visualizar
+    -Contexto: Real
+    -Propriedade: Alterar
 INFORMAÇÕES
     -Titulo: Descricao
     -Descição: Descricao
     -Help:
 OPÇÕES
     -Lista:
-    -Ini Padrão: IIF(!INCLUI,POSICIONE("SM0",1,cEmpAnt+ZZ7->ZZ7_CODIGO,"M0_FILIAL"),'')
-    -Ini Browse: POSICIONE("SM0",1,cEmpAnt+ZZ7->ZZ7_CODIGO,"M0_FILIAL")
+    -Ini Padrão:
+    -Ini Browse:
     -Modo Edição:
     -Cons Padrão:
 VALIDAÇÕES
