@@ -745,20 +745,6 @@ Chave:
 Condicao:
 ]: #
 
-ZZ7_CODIGO
-
-[
-Sequencia: 001
-Cnt. Dominio: ZZ7_DESCR 
-Tipo: 1-Primario
-Regra: FwFilialName(cEmpAnt,FwFldGet("ZZ7_CODIGO"),1)
-Posiciona: 2-Nao
-Alias:
-Orden:
-Chave:
-Condicao:
-]: #
-
 ## Consulta Padrão
 
 ## Parâmetros
