@@ -1,0 +1,210 @@
+#Include 'Protheus.ch'
+#Include 'FWMVCDEF.ch'
+#Include 'RestFul.CH'
+#INCLUDE "TOTVS.CH"
+#INCLUDE "TopConn.ch"
+#INCLUDE 'COLORS.CH'
+#INCLUDE 'FONT.CH'
+#INCLUDE 'RWMAKE.CH'
+#INCLUDE "TBICONN.CH"
+#include "parmtype.ch"
+#INCLUDE "FWADAPTEREAI.CH"
+#Include "TBICODE.CH"
+#include 'fileio.ch'
+#include 'tlpp-core.th'
+/*
+#---------------------------------------------------------------#
+| Programa:| NP3EP002                          Data:24/10/2023  |
+|---------------------------------------------------------------|
+| Autor:   | NP3 Tecnologia                                     |
+|---------------------------------------------------------------|
+| Objetivo:| Classe do execauto de apontamento                  |
+|---------------------------------------------------------------|
+|                        ALTERAÇÕES                             |
+|---------------------------------------------------------------|
+|     Analista      |   Data     |  Motivo                      |
+|---------------------------------------------------------------|
+|                   |            |                              |
+|                   |            |                              |
+#---------------------------------------------------------------#
+LINK TDN: ** NÃO TEM **
+*/
+CLASS NP3EP002
+    PRIVATE DATA oCabec as Object
+    PRIVATE DATA oItens as Object
+    PRIVATE DATA aCabec as Array
+    PRIVATE DATA aItem as Array
+    PRIVATE DATA aItens as Array
+    PRIVATE DATA aAuxCab as Array
+    PRIVATE DATA aAuxIte as Array
+    PRIVATE DATA cErro as Character
+    PRIVATE DATA cMsg as Character
+    PRIVATE DATA cRotina as Character
+    PRIVATE DATA lExist as Logical
+    PUBLIC  METHOD New(oJson,aAux,cRotina) CONSTRUCTOR
+    PUBLIC  METHOD Create()
+    PRIVATE METHOD Mvc()
+    PRIVATE METHOD ExcAuto()
+    PRIVATE METHOD AddUJ2(oModel,oModelUJ2,aStructUJ2)
+    PUBLIC METHOD GetError()
+    PUBLIC METHOD GetMsg()
+ENDCLASS
+
+// Construtor
+METHOD New(oJson,aAux,cRotina) CLASS NP3EP002
+    Local i
+    Local j
+    // Inicia as variaveis
+    ::oCabec := oJson['ACABEC']
+    ::oItens  := oJson['AITENS']
+    ::aAuxCab := ::oCabec:GetNames()
+    ::aAuxIte := {}
+    ::aCabec := {}
+    ::aItens := {}
+    ::cErro := ""
+    ::cMsg := ""
+    ::cRotina := cRotina
+    // Captura as informações do Json do cabeçalho
+    For i := 1 to Len(::aAuxCab)
+        aAdd(::aCabec, {::aAuxCab[i], ::oCabec:GetJsonText(::aAuxCab[i]), Nil})
+    Next
+    // Ordena o array do cabeçalho
+    If Len(::aCabec) > 0
+        ::aCabec := FWVetByDic(::aCabec, "UJ0")
+    EndIf
+    // Captura as informações do Json dos itens
+    For i := 1 to Len(::oItens)
+        ::aAuxIte := ::oItens[i]:GetNames()
+        ::aItem := {}
+        For j := 1 to Len(::aAuxIte)
+            aAdd(::aItem, {::aAuxIte[j], ::oItens[i]:GetJsonText(::aAuxIte[j]), Nil})
+        Next
+        // Ordena o array do item
+        If Len(::aItem) > 0
+            ::aItem := FWVetByDic(::aItem, "UJ2")
+        EndIf
+        aAdd(::aItens,::aItem)
+    Next 
+RETURN
+
+// Cria o apontamento
+METHOD Create() CLASS NP3EP002
+    Local lRet := .f.
+    // Escolha da rotina utilizada
+    If AllTrim(UPPER(::cRotina)) == "MVC"
+        lRet := ::Mvc()
+    Else
+        lRet := ::ExecAuto()
+    EndIf
+RETURN lRet
+
+// Executa o MVC
+METHOD Mvc() CLASS NP3EP002
+    Local lRet := .f.
+    Local oModelMaster
+	Local oStructMaster
+	Local aStructMaster
+    Local oModelUJ2    := NIL
+	Local oStructUJ2   := NIL
+	Local aStructUJ2   := NIL
+    Local nI 		    := 0
+	// Local nStart    	:= 0
+	Default nOpcao       	 := 3 //Inclusao de Apontamentos
+    // Aqui ocorre o instaciamento do modelo de dados (Model)
+	oModel := FWLoadModel( 'RFUNA034' ) // MVC do Cadastro de Apontamento de servicos
+    // Temos que definir qual a operação deseja: 3-Inclusão / 4-Alteração / 5-Exclusão
+	oModel:SetOperation(nOpcao)
+    // Antes de atribuirmos os valores dos campos temos que ativar o modelo
+	oModel:Activate()
+    // objetos da enchoice
+	oModelMaster 	:= oModel:GetModel('UJ0MASTER') // Instanciamos apenas referentes aos dados
+	oStructMaster 	:= oModelMaster:GetStruct() // Obtemos a estrutura de dados da enchoice
+	aStructMaster	:= oStructMaster:GetFields() // Obtemos os campos
+    // objetos do grid da tabela UJ2 - Produtos e Servicos Internos
+	oModelUJ2		:= oModel:GetModel('UJ2DETAIL') // Intanciamos apenas a parte do modelo referente ao grid
+	oStructUJ2		:= oModelUJ2:GetStruct() // Obtemos a estrutura de dados do grid
+	aStructUJ2		:= oStructUJ2:GetFields() // Obtemos os campos
+    // percorro os campos do cabeçalho
+	For nI := 1 To Len(::aCabec)
+		// Verifica se os campos passados existem na estrutura do modelo
+		If ( aScan(aStructMaster,{|x| AllTrim( x[3] )== AllTrim(::aCabec[nI][1]) } ) ) > 0
+			// feita a atribuição do dado ao campo do Model
+			If !( oModel:SetValue( 'UJ0MASTER', ::aCabec[nI][1], (::aCabec[nI][2] )) )
+				lRet := .F.
+				Exit
+			EndIf
+		EndIf
+	Next nI
+    // se os campos do cabeçalho foram setados com sucesso
+	If lRet
+		If lRet .And. Len(::aItens) > 0
+			lRet := AddUJ2(@oModel,@oModelUJ2,aStructUJ2,::aItens)
+		EndIf
+		// Faz-se a valida?o dos dados
+		If lRet .And. ( lRet := oModel:VldData() )
+			// Se o dados foram validados faz-se a gravação efetiva dos dados (commit)
+			If oModel:CommitData()
+                lRet := .T.
+                ::cMsg := "Cadastro de Apontamento - Realizado com Sucesso" 
+            EndIf
+		EndIf
+	EndIf
+    //Se não deu certo a inclusão, mostra a mensagem de erro
+    If !lRet
+		// Se os dados n? foram validados obtemos a descri?o do erro para gerar LOG ou mensagem de aviso
+		aErro := oModel:GetErrorMessage()
+		::cErro += "Id do formulário de origem:" 	+ ' [' + AllToChar( aErro[1] ) + ']' 
+		::cErro += "Id do campo de origem: " 		+ ' [' + AllToChar( aErro[2] ) + ']' 
+		::cErro += "Id do formulário de erro: " 	+ ' [' + AllToChar( aErro[3] ) + ']' 
+		::cErro += "Id do campo de erro: " 			+ ' [' + AllToChar( aErro[4] ) + ']' 
+		::cErro += "Id do erro: " 					+ ' [' + AllToChar( aErro[5] ) + ']' 
+		::cErro += "Mensagem do erro: " 			+ ' [' + AllToChar( aErro[6] ) + ']' 
+		::cErro += "Mensagem da solução: " 			+ ' [' + AllToChar( aErro[7] ) + ']' 
+		::cErro += "Valor atribuído: " 				+ ' [' + AllToChar( aErro[8] ) + ']' 
+		::cErro += "Valor anterior: " 				+ ' [' + AllToChar( aErro[9] ) + ']' 
+	EndIf
+    // Desativamos o Model
+	oModel:DeActivate()
+RETURN lRet
+
+// Metodo de montar o grid
+METHOD AddUJ2(oModel,oModelUJ2,aStructUJ2) CLASS NP3EP002
+	Local nI       := 0
+	Local nJ	   := 0
+	Local nItErro  := 0
+	Local lRet     := .T.
+
+	UJ2->( DbSetOrder(1) ) //UJ2_FILIAL+UJ2_CODIGO+UJ2_ITEM
+	For nI := 1 To Len(::aItens)
+        // tenta adicionar linha
+		If  ( nItErro := oModelGrid:AddLine() ) = 0
+			lRet    := .F.
+			Exit
+		EndIf
+		if lRet
+			For nJ := 1 To Len( ::aItens[nI] )
+				// Verifica se os campos passados existem na estrutura de item
+				If ( aScan( aStructDetail, { |x| AllTrim( x[3] ) ==  AllTrim( ::aItens[nI][nJ][1] ) } ) ) > 0
+					If !( oModel:SetValue('UJ2DETAIL', ::aItens[nI][nJ][1], ::aItens[nI][nJ][2] ) )
+						// Caso a atribuição não possa ser feita, por algum motivo (validação, por exemplo)
+						// o método SetValue retorna .F.
+						lRet    := .F.
+						nItErro := nI
+						Exit
+					EndIf
+				EndIf
+			Next
+		endIf
+		If !lRet
+			Exit
+		EndIf
+	Next nI
+Return lRet
+
+// Retorna Erro
+METHOD GetError() CLASS NP3EP002
+RETURN ::cErro
+
+// Retorna Mensagem
+METHOD GetMsg() CLASS NP3EP002
+RETURN ::cMsg
