@@ -9,6 +9,10 @@ ZZ6010-Filiais de Serviço(C,C,C)
 
 ZZ7010-Veículos(C,C,C)
 
+ZZ8010-Log(C,C,C)
+
+ZZ9010-Taréfas(C,C,C)
+
 ## Índices
 ZZ5010 1-ZZ5_FILIAL+ZZ5_CODIGO+ZZ5_GRUPO
 
@@ -18,7 +22,11 @@ ZZ6010 1-ZZ6_FILIAL+ZZ6_FILSER
 
 ZZ6010 2-ZZ6_FILIAL+ZZ6_EXESER
 
-ZZ7010 1-ZZ7010 1-ZZ7_FILIAL+ZZ7_CODIGO
+ZZ7010 1-ZZ7_FILIAL+ZZ7_CODIGO
+
+ZZ8010 1-ZZ8_FILIAL+ZZ8_ID+ZZ8_SEQUEN
+
+ZZ9010 1-ZZ9_FILIAL+ZZ9_CODIGO
 
 ## Campos
 
@@ -558,7 +566,7 @@ VALIDAÇÕES
     -Val Sistema:
     -Nivel:
 USO
-    -Obrigatório:
+    -Obrigatório: Sim
     -Usado: Sim
     -Browse: Sim
 ]: #
@@ -573,6 +581,366 @@ CAMPO
     -Formato:
     -Contexto: Real
     -Propriedade: Visualizar
+INFORMAÇÕES
+    -Titulo: ID UMOV
+    -Descição: ID UMOV
+    -Help:
+OPÇÕES
+    -Lista:
+    -Ini Padrão:
+    -Ini Browse:
+    -Modo Edição:
+    -Cons Padrão:
+VALIDAÇÕES
+    -Val Usuário:
+    -Val Sistema:
+    -Nivel:
+USO
+    -Obrigatório:
+    -Usado: Sim
+    -Browse: Sim
+]: #
+
+ZZ8_ID
+
+[
+CAMPO
+    -Tipo: 1-Caracter
+    -Tamanho: 10
+    -Decimal: 0
+    -Formato:
+    -Contexto: Real
+    -Propriedade: Alterar
+INFORMAÇÕES
+    -Titulo: ID Fluig
+    -Descição: ID Fluig
+    -Help:
+OPÇÕES
+    -Lista:
+    -Ini Padrão:
+    -Ini Browse:
+    -Modo Edição:
+    -Cons Padrão:
+VALIDAÇÕES
+    -Val Usuário:
+    -Val Sistema:
+    -Nivel:
+USO
+    -Obrigatório:
+    -Usado: Sim
+    -Browse: Sim
+]: #
+
+ZZ8_SEQUEN
+
+[
+CAMPO
+    -Tipo: 1-Caracter
+    -Tamanho: 3
+    -Decimal: 0
+    -Formato:
+    -Contexto: Real
+    -Propriedade: Alterar
+INFORMAÇÕES
+    -Titulo: Sequencia
+    -Descição: Sequencia
+    -Help:
+OPÇÕES
+    -Lista:
+    -Ini Padrão:
+    -Ini Browse:
+    -Modo Edição:
+    -Cons Padrão:
+VALIDAÇÕES
+    -Val Usuário:
+    -Val Sistema:
+    -Nivel:
+USO
+    -Obrigatório:
+    -Usado: Sim
+    -Browse: Sim
+]: #
+
+ZZ8_DATA
+
+[
+CAMPO
+    -Tipo: 4-Data
+    -Tamanho: 8
+    -Decimal: 0
+    -Formato:
+    -Contexto: Real
+    -Propriedade: Visualizar
+INFORMAÇÕES
+    -Titulo: Sequencia
+    -Descição: Sequencia
+    -Help:
+OPÇÕES
+    -Lista:
+    -Ini Padrão:
+    -Ini Browse:
+    -Modo Edição:
+    -Cons Padrão:
+VALIDAÇÕES
+    -Val Usuário:
+    -Val Sistema:
+    -Nivel:
+USO
+    -Obrigatório:
+    -Usado: Sim
+    -Browse: Sim
+]: #
+
+ZZ8_HORA
+
+[
+CAMPO
+    -Tipo: 1-Caracter
+    -Tamanho: 5
+    -Decimal: 0
+    -Formato: 99:99
+    -Contexto: Real
+    -Propriedade: Alterar
+INFORMAÇÕES
+    -Titulo: Hora
+    -Descição: Hora
+    -Help:
+OPÇÕES
+    -Lista:
+    -Ini Padrão:
+    -Ini Browse:
+    -Modo Edição:
+    -Cons Padrão:
+VALIDAÇÕES
+    -Val Usuário:
+    -Val Sistema:
+    -Nivel:
+USO
+    -Obrigatório:
+    -Usado: Sim
+    -Browse: Sim
+]: #
+
+ZZ8_USER  
+
+[
+CAMPO
+    -Tipo: 1-Caracter
+    -Tamanho: 6
+    -Decimal: 0
+    -Formato: 
+    -Contexto: Real
+    -Propriedade: Alterar
+INFORMAÇÕES
+    -Titulo: Usuario
+    -Descição: Usuario
+    -Help:
+OPÇÕES
+    -Lista:
+    -Ini Padrão:
+    -Ini Browse:
+    -Modo Edição:
+    -Cons Padrão:
+VALIDAÇÕES
+    -Val Usuário:
+    -Val Sistema:
+    -Nivel:
+USO
+    -Obrigatório:
+    -Usado: Sim
+    -Browse: Sim
+]: #
+
+ZZ8_JUSTIF  
+
+[
+CAMPO
+    -Tipo: 1-Caracter
+    -Tamanho: 3
+    -Decimal: 0
+    -Formato: 
+    -Contexto: Real
+    -Propriedade: Alterar
+INFORMAÇÕES
+    -Titulo: Justificativ
+    -Descição: Justificativa
+    -Help:
+OPÇÕES
+    -Lista:
+    -Ini Padrão:
+    -Ini Browse:
+    -Modo Edição:
+    -Cons Padrão:
+VALIDAÇÕES
+    -Val Usuário:
+    -Val Sistema:
+    -Nivel:
+USO
+    -Obrigatório:
+    -Usado: Sim
+    -Browse: Sim
+]: #
+
+ZZ8_DESJUS  
+
+[
+CAMPO
+    -Tipo: 1-Caracter
+    -Tamanho: 100
+    -Decimal: 0
+    -Formato: 
+    -Contexto: Real
+    -Propriedade: Alterar
+INFORMAÇÕES
+    -Titulo: Descricao
+    -Descição: Descricao
+    -Help:
+OPÇÕES
+    -Lista:
+    -Ini Padrão:
+    -Ini Browse:
+    -Modo Edição:
+    -Cons Padrão:
+VALIDAÇÕES
+    -Val Usuário:
+    -Val Sistema:
+    -Nivel:
+USO
+    -Obrigatório:
+    -Usado: Sim
+    -Browse: Sim
+]: #
+
+ZZ8_JSON  
+
+[
+CAMPO
+    -Tipo: 1-Caracter
+    -Tamanho: 2
+    -Decimal: 0
+    -Formato: 
+    -Contexto: Real
+    -Propriedade: Alterar
+INFORMAÇÕES
+    -Titulo: Status
+    -Descição: Status
+    -Help:
+OPÇÕES
+    -Lista:
+    -Ini Padrão:
+    -Ini Browse:
+    -Modo Edição:
+    -Cons Padrão:
+VALIDAÇÕES
+    -Val Usuário:
+    -Val Sistema:
+    -Nivel:
+USO
+    -Obrigatório:
+    -Usado: Sim
+    -Browse: Sim
+]: #
+
+ZZ8_STATUS  
+
+[
+CAMPO
+    -Tipo: 5-Memo
+    -Tamanho: 10
+    -Decimal: 0
+    -Formato: 
+    -Contexto: Real        
+    -Propriedade: Alterar        
+INFORMAÇÕES
+    -Titulo: Json                
+    -Descição: Json                
+    -Help:
+OPÇÕES
+    -Lista:
+    -Ini Padrão:
+    -Ini Browse:
+    -Modo Edição:
+    -Cons Padrão:
+VALIDAÇÕES
+    -Val Usuário:
+    -Val Sistema:
+    -Nivel:
+USO
+    -Obrigatório:
+    -Usado: Sim
+    -Browse: Sim
+]: #
+
+ZZ9_CODIGO
+
+[
+CAMPO
+    -Tipo: 1-Caracter
+    -Tamanho: 6
+    -Decimal: 0
+    -Formato:
+    -Contexto: Real
+    -Propriedade: Visualizar
+INFORMAÇÕES
+    -Titulo: Código
+    -Descição: Código
+    -Help:
+OPÇÕES
+    -Lista:
+    -Ini Padrão: GetSXENum("ZZ9","ZZ9_CODIGO")
+    -Ini Browse:
+    -Modo Edição:
+    -Cons Padrão:
+VALIDAÇÕES
+    -Val Usuário:
+    -Val Sistema:
+    -Nivel:
+USO
+    -Obrigatório:Sim
+    -Usado: Sim
+    -Browse: Sim
+]: #
+
+ZZ9_DESCR
+
+[
+CAMPO
+    -Tipo: 1-Caracter
+    -Tamanho: 100
+    -Decimal: 0
+    -Formato:
+    -Contexto: Real
+    -Propriedade: Alterar
+INFORMAÇÕES
+    -Titulo: Descricao
+    -Descição: Descricao
+    -Help:
+OPÇÕES
+    -Lista:
+    -Ini Padrão:
+    -Ini Browse:
+    -Modo Edição:
+    -Cons Padrão:
+VALIDAÇÕES
+    -Val Usuário:
+    -Val Sistema:
+    -Nivel:
+USO
+    -Obrigatório: Sim
+    -Usado: Sim
+    -Browse: Sim
+]: #
+
+ZZ9_IDMOV
+
+[
+CAMPO
+    -Tipo: 1-Caracter
+    -Tamanho: 10
+    -Decimal: 0
+    -Formato: @!
+    -Contexto: Real
+    -Propriedade: Alterar
 INFORMAÇÕES
     -Titulo: ID UMOV
     -Descição: ID UMOV
