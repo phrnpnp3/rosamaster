@@ -15,6 +15,8 @@ ZZ9010-Taréfas(C,C,C)
 
 ZZA010-CallBack Umov(E,E,E)
 
+ZZB010-Movimento de tarefas(E,E,E)
+
 ## Índices
 ZZ5010 1-ZZ5_FILIAL+ZZ5_CODIGO+ZZ5_GRUPO
 
@@ -30,9 +32,13 @@ ZZ8010 1-ZZ8_FILIAL+ZZ8_ID+ZZ8_SEQUEN
 
 ZZ9010 1-ZZ9_FILIAL+ZZ9_CODIGO
 
-ZZA010 1-ZZA_FILIAL+ZZ5_IDFLUI
+ZZA010 1-ZZA_FILIAL+ZZA_IDFLUI
 
-ZZA010 1-ZZA_FILIAL+ZZ5_IDUMOV
+ZZA010 2-ZZA_FILIAL+ZZA_IDUMOV
+
+ZZB010 1-ZZB_FILIAL+ZZB_IDFLUI+ZZB_IDUMOV
+
+ZZB010 2-ZZB_FILIAL+ZZB_IDUMOV+ZZB_IDFLUI
 
 ## Campos
 
@@ -1134,6 +1140,550 @@ INFORMAÇÕES
 OPÇÕES
     -Lista:
     -Ini Padrão:
+    -Ini Browse:
+    -Modo Edição:
+    -Cons Padrão:
+VALIDAÇÕES
+    -Val Usuário:
+    -Val Sistema:
+    -Nivel:
+USO
+    -Obrigatório:
+    -Usado: Sim
+    -Browse:
+]: #
+
+ZZB_IDFLUI
+
+[
+CAMPO
+    -Tipo: 1-Caracter
+    -Tamanho: 10
+    -Decimal: 0
+    -Formato:
+    -Contexto: Real
+    -Propriedade: Alterar
+INFORMAÇÕES
+    -Titulo: Id Fluig
+    -Descição: Id Fluig
+    -Help:
+OPÇÕES
+    -Lista:
+    -Ini Padrão:
+    -Ini Browse:
+    -Modo Edição:
+    -Cons Padrão:
+VALIDAÇÕES
+    -Val Usuário:
+    -Val Sistema:
+    -Nivel:
+USO
+    -Obrigatório:
+    -Usado: Sim
+    -Browse:
+]: #
+
+ZZB_IDUMOV
+
+[
+CAMPO
+    -Tipo: 1-Caracter
+    -Tamanho: 10
+    -Decimal: 0
+    -Formato:
+    -Contexto: Real
+    -Propriedade: Alterar
+INFORMAÇÕES
+    -Titulo: Id Umov
+    -Descição: Id Umov
+    -Help:
+OPÇÕES
+    -Lista:
+    -Ini Padrão:
+    -Ini Browse:
+    -Modo Edição:
+    -Cons Padrão:
+VALIDAÇÕES
+    -Val Usuário:
+    -Val Sistema:
+    -Nivel:
+USO
+    -Obrigatório:
+    -Usado: Sim
+    -Browse:
+]: #
+
+ZZB_CODVEI
+
+[
+CAMPO
+    -Tipo: 1-Caracter
+    -Tamanho: 6
+    -Decimal: 0
+    -Formato:
+    -Contexto: Real
+    -Propriedade: Visualizar
+INFORMAÇÕES
+    -Titulo: Cod Veiculo
+    -Descição: Codigo Veiculo 
+    -Help:
+OPÇÕES
+    -Lista:
+    -Ini Padrão: 
+    -Ini Browse:
+    -Modo Edição:
+    -Cons Padrão:
+VALIDAÇÕES
+    -Val Usuário:
+    -Val Sistema:
+    -Nivel:
+USO
+    -Obrigatório:
+    -Usado: Sim
+    -Browse: 
+]: #
+
+ZZB_DESVEI
+
+[
+CAMPO
+    -Tipo: 1-Caracter
+    -Tamanho: 100
+    -Decimal: 0
+    -Formato:
+    -Contexto: Real
+    -Propriedade: Alterar
+INFORMAÇÕES
+    -Titulo: Desc Veiculo
+    -Descição: Descricao Veiculo
+    -Help:
+OPÇÕES
+    -Lista:
+    -Ini Padrão:
+    -Ini Browse:
+    -Modo Edição:
+    -Cons Padrão:
+VALIDAÇÕES
+    -Val Usuário:
+    -Val Sistema:
+    -Nivel:
+USO
+    -Obrigatório: 
+    -Usado: 
+    -Browse: 
+]: #
+
+ZZB_CODTAR
+
+[
+CAMPO
+    -Tipo: 1-Caracter
+    -Tamanho: 6
+    -Decimal: 0
+    -Formato:
+    -Contexto: Real
+    -Propriedade: Visualizar
+INFORMAÇÕES
+    -Titulo: Cod Tarefa
+    -Descição: Código Tarefa
+    -Help:
+OPÇÕES
+    -Lista:
+    -Ini Padrão:
+    -Ini Browse:
+    -Modo Edição:
+    -Cons Padrão:
+VALIDAÇÕES
+    -Val Usuário:
+    -Val Sistema:
+    -Nivel:
+USO
+    -Obrigatório:
+    -Usado: Sim
+    -Browse: 
+]: #
+
+ZZB_DESTAR
+
+[
+CAMPO
+    -Tipo: 1-Caracter
+    -Tamanho: 100
+    -Decimal: 0
+    -Formato:
+    -Contexto: Real
+    -Propriedade: Alterar
+INFORMAÇÕES
+    -Titulo: Des Tarefa
+    -Descição: Descricao Tarefa
+    -Help:
+OPÇÕES
+    -Lista:
+    -Ini Padrão:
+    -Ini Browse:
+    -Modo Edição:
+    -Cons Padrão:
+VALIDAÇÕES
+    -Val Usuário:
+    -Val Sistema:
+    -Nivel:
+USO
+    -Obrigatório:
+    -Usado: Sim
+    -Browse:
+]: #
+
+
+ZZB_LOCDE
+
+[
+CAMPO
+    -Tipo: 1-Caracter
+    -Tamanho: 11
+    -Decimal: 0
+    -Formato:
+    -Contexto: Real
+    -Propriedade: Alterar
+INFORMAÇÕES
+    -Titulo: Local DE 
+    -Descição: Local DE
+    -Help:
+OPÇÕES
+    -Lista:
+    -Ini Padrão:
+    -Ini Browse:
+    -Modo Edição:
+    -Cons Padrão:
+VALIDAÇÕES
+    -Val Usuário:
+    -Val Sistema:
+    -Nivel:
+USO
+    -Obrigatório:
+    -Usado: Sim
+    -Browse:
+]: #
+
+
+ZZB_DESLDE
+
+[
+CAMPO
+    -Tipo: 1-Caracter
+    -Tamanho: 100
+    -Decimal: 0
+    -Formato:
+    -Contexto: Real
+    -Propriedade: Alterar
+INFORMAÇÕES
+    -Titulo: Des Loc De
+    -Descição: Descricao Local de
+    -Help:
+OPÇÕES
+    -Lista:
+    -Ini Padrão:
+    -Ini Browse:
+    -Modo Edição:
+    -Cons Padrão:
+VALIDAÇÕES
+    -Val Usuário:
+    -Val Sistema:
+    -Nivel:
+USO
+    -Obrigatório:
+    -Usado: Sim
+    -Browse:
+]: #
+
+ZZB_LOCPA
+
+[
+CAMPO
+    -Tipo: 1-Caracter
+    -Tamanho: 11
+    -Decimal: 0
+    -Formato:
+    -Contexto: Real
+    -Propriedade: Alterar
+INFORMAÇÕES
+    -Titulo: Local Para 
+    -Descição: Local Para
+    -Help:
+OPÇÕES
+    -Lista:
+    -Ini Padrão:
+    -Ini Browse:
+    -Modo Edição:
+    -Cons Padrão:
+VALIDAÇÕES
+    -Val Usuário:
+    -Val Sistema:
+    -Nivel:
+USO
+    -Obrigatório:
+    -Usado: Sim
+    -Browse:
+]: #
+
+
+ZZB_DESLPA
+
+[
+CAMPO
+    -Tipo: 1-Caracter
+    -Tamanho: 100
+    -Decimal: 0
+    -Formato:
+    -Contexto: Real
+    -Propriedade: Alterar
+INFORMAÇÕES
+    -Titulo: Des Loc Pa
+    -Descição: Descricao Local Para
+    -Help:
+OPÇÕES
+    -Lista:
+    -Ini Padrão:
+    -Ini Browse:
+    -Modo Edição:
+    -Cons Padrão:
+VALIDAÇÕES
+    -Val Usuário:
+    -Val Sistema:
+    -Nivel:
+USO
+    -Obrigatório:
+    -Usado: Sim
+    -Browse:
+]: #
+
+
+ZZB_OBSERV
+
+[
+CAMPO
+    -Tipo: 1-Caracter
+    -Tamanho: 140
+    -Decimal: 0
+    -Formato:
+    -Contexto: Real
+    -Propriedade: Alterar
+INFORMAÇÕES
+    -Titulo: Obs Tarefa
+    -Descição: Observacao Tarefa
+    -Help:
+OPÇÕES
+    -Lista:
+    -Ini Padrão:
+    -Ini Browse:
+    -Modo Edição:
+    -Cons Padrão:
+VALIDAÇÕES
+    -Val Usuário:
+    -Val Sistema:
+    -Nivel:
+USO
+    -Obrigatório:
+    -Usado: Sim
+    -Browse:
+]: #
+
+ZZB_DTINI
+
+[
+CAMPO
+    -Tipo: 4-Data
+    -Tamanho: 8
+    -Decimal: 0
+    -Formato:
+    -Contexto: Real
+    -Propriedade: Alterar
+INFORMAÇÕES
+    -Titulo: Data inicial
+    -Descição: Data inicial
+    -Help:
+OPÇÕES
+    -Lista:
+    -Ini Padrão:
+    -Ini Browse:
+    -Modo Edição:
+    -Cons Padrão:
+VALIDAÇÕES
+    -Val Usuário:
+    -Val Sistema:
+    -Nivel:
+USO
+    -Obrigatório:
+    -Usado: Sim
+    -Browse:
+]: #
+
+ZZB_HRINI
+
+[
+CAMPO
+    -Tipo: 1-Caracter
+    -Tamanho: 5
+    -Decimal: 0
+    -Formato: 99:99
+    -Contexto: Real
+    -Propriedade: Alterar
+INFORMAÇÕES
+    -Titulo: Hora inicial
+    -Descição: Hora inicial
+    -Help:
+OPÇÕES
+    -Lista:
+    -Ini Padrão:
+    -Ini Browse:
+    -Modo Edição:
+    -Cons Padrão:
+VALIDAÇÕES
+    -Val Usuário:
+    -Val Sistema:
+    -Nivel:
+USO
+    -Obrigatório:
+    -Usado: Sim
+    -Browse:
+]: #
+
+ZZB_DTFIN
+
+[
+CAMPO
+    -Tipo: 4-Data
+    -Tamanho: 8
+    -Decimal: 0
+    -Formato:
+    -Contexto: Real
+    -Propriedade: Alterar
+INFORMAÇÕES
+    -Titulo: Data final
+    -Descição: Data final
+    -Help:
+OPÇÕES
+    -Lista:
+    -Ini Padrão:
+    -Ini Browse:
+    -Modo Edição:
+    -Cons Padrão:
+VALIDAÇÕES
+    -Val Usuário:
+    -Val Sistema:
+    -Nivel:
+USO
+    -Obrigatório:
+    -Usado: Sim
+    -Browse:
+]: #
+
+ZZB_HRFIN
+
+[
+CAMPO
+    -Tipo: 1-Caracter
+    -Tamanho: 5
+    -Decimal: 0
+    -Formato: 99:99
+    -Contexto: Real
+    -Propriedade: Alterar
+INFORMAÇÕES
+    -Titulo: Hora final
+    -Descição: Hora final
+    -Help:
+OPÇÕES
+    -Lista:
+    -Ini Padrão:
+    -Ini Browse:
+    -Modo Edição:
+    -Cons Padrão:
+VALIDAÇÕES
+    -Val Usuário:
+    -Val Sistema:
+    -Nivel:
+USO
+    -Obrigatório:
+    -Usado: Sim
+    -Browse:
+]: #
+
+ZZB_RESUMO
+
+[
+CAMPO
+    -Tipo: 1-Caracter
+    -Tamanho: 140
+    -Decimal: 0
+    -Formato: 
+    -Contexto: Real
+    -Propriedade: Alterar
+INFORMAÇÕES
+    -Titulo: Ret Umov
+    -Descição: Retorno do umov
+    -Help:
+OPÇÕES
+    -Lista:
+    -Ini Padrão:
+    -Ini Browse:
+    -Modo Edição:
+    -Cons Padrão:
+VALIDAÇÕES
+    -Val Usuário:
+    -Val Sistema:
+    -Nivel:
+USO
+    -Obrigatório:
+    -Usado: Sim
+    -Browse:
+]: #
+
+ZZB_KM
+
+[
+CAMPO
+    -Tipo: 2-Numero
+    -Tamanho: 7
+    -Decimal: 2
+    -Formato: 
+    -Contexto: Real
+    -Propriedade: Alterar
+INFORMAÇÕES
+    -Titulo: Km
+    -Descição: Km
+    -Help:
+OPÇÕES
+    -Lista:
+    -Ini Padrão:
+    -Ini Browse:
+    -Modo Edição:
+    -Cons Padrão:
+VALIDAÇÕES
+    -Val Usuário:
+    -Val Sistema:
+    -Nivel:
+USO
+    -Obrigatório:
+    -Usado: Sim
+    -Browse:
+]: #
+
+ZZB_STATUS
+
+[
+CAMPO
+    -Tipo: 1-Caracter
+    -Tamanho: 1
+    -Decimal: 0
+    -Formato: 
+    -Contexto: Real
+    -Propriedade: Alterar
+INFORMAÇÕES
+    -Titulo: Ret Umov
+    -Descição: Retorno do umov
+    -Help:
+OPÇÕES
+    -Lista: 1=Aberto;2=Iniciado;3=Concluido
+    -Ini Padrão: "1"
     -Ini Browse:
     -Modo Edição:
     -Cons Padrão:
