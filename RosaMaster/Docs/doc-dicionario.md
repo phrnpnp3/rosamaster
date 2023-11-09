@@ -13,6 +13,8 @@ ZZ8010-Log(C,C,C)
 
 ZZ9010-Taréfas(C,C,C)
 
+ZZA010-CallBack Umov(E,E,E)
+
 ## Índices
 ZZ5010 1-ZZ5_FILIAL+ZZ5_CODIGO+ZZ5_GRUPO
 
@@ -27,6 +29,8 @@ ZZ7010 1-ZZ7_FILIAL+ZZ7_CODIGO
 ZZ8010 1-ZZ8_FILIAL+ZZ8_ID+ZZ8_SEQUEN
 
 ZZ9010 1-ZZ9_FILIAL+ZZ9_CODIGO
+
+ZZA010 1-ZZA_FILIAL+ZZ5_SEQUEN
 
 ## Campos
 
@@ -959,6 +963,126 @@ USO
     -Obrigatório:
     -Usado: Sim
     -Browse: Sim
+]: #
+
+ZZA_SEQUEN
+
+[
+CAMPO
+    -Tipo: 1-Caracter
+    -Tamanho: 15
+    -Decimal: 0
+    -Formato:
+    -Contexto: Real
+    -Propriedade: Alterar
+INFORMAÇÕES
+    -Titulo: Sequencia
+    -Descição: Sequencia
+    -Help:
+OPÇÕES
+    -Lista:
+    -Ini Padrão:
+    -Ini Browse:
+    -Modo Edição:
+    -Cons Padrão:
+VALIDAÇÕES
+    -Val Usuário:
+    -Val Sistema:
+    -Nivel:
+USO
+    -Obrigatório:
+    -Usado: Sim
+    -Browse:
+]: #
+
+ZZA_JSONP
+
+[
+CAMPO
+    -Tipo: 5-Memo
+    -Tamanho: 10
+    -Decimal: 0
+    -Formato:
+    -Contexto: Real
+    -Propriedade: Alterar
+INFORMAÇÕES
+    -Titulo: Json POST
+    -Descição: Json POST
+    -Help:
+OPÇÕES
+    -Lista:
+    -Ini Padrão:
+    -Ini Browse:
+    -Modo Edição:
+    -Cons Padrão:
+VALIDAÇÕES
+    -Val Usuário:
+    -Val Sistema:
+    -Nivel:
+USO
+    -Obrigatório:
+    -Usado: Sim
+    -Browse:
+]: #
+
+ZZA_JSONG 
+
+[
+CAMPO
+    -Tipo: 5-Memo
+    -Tamanho: 10
+    -Decimal: 0
+    -Formato:
+    -Contexto: Real
+    -Propriedade: Alterar
+INFORMAÇÕES
+    -Titulo: Json GET
+    -Descição: Json GET
+    -Help:
+OPÇÕES
+    -Lista:
+    -Ini Padrão:
+    -Ini Browse:
+    -Modo Edição:
+    -Cons Padrão:
+VALIDAÇÕES
+    -Val Usuário:
+    -Val Sistema:
+    -Nivel:
+USO
+    -Obrigatório:
+    -Usado: Sim
+    -Browse:
+]: #
+
+ZZA_STATUS 
+
+[
+CAMPO
+    -Tipo: 1-Caracter
+    -Tamanho: 1
+    -Decimal: 0
+    -Formato:
+    -Contexto: Real
+    -Propriedade: Alterar
+INFORMAÇÕES
+    -Titulo: Status
+    -Descição: Status
+    -Help:
+OPÇÕES
+    -Lista:
+    -Ini Padrão:
+    -Ini Browse:
+    -Modo Edição:
+    -Cons Padrão:
+VALIDAÇÕES
+    -Val Usuário:
+    -Val Sistema:
+    -Nivel:
+USO
+    -Obrigatório:
+    -Usado: Sim
+    -Browse:
 ]: #
 
 ### Tabelas Padrões
