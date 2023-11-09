@@ -1213,6 +1213,36 @@ USO
     -Browse:
 ]: #
 
+ZZB_SEQ
+
+[
+CAMPO
+    -Tipo: 1-Caracter
+    -Tamanho: 2
+    -Decimal: 0
+    -Formato:
+    -Contexto: Real
+    -Propriedade: Alterar
+INFORMAÇÕES
+    -Titulo: Sequencia
+    -Descição: Sequencia
+    -Help:
+OPÇÕES
+    -Lista:
+    -Ini Padrão:
+    -Ini Browse:
+    -Modo Edição:
+    -Cons Padrão:
+VALIDAÇÕES
+    -Val Usuário:
+    -Val Sistema:
+    -Nivel:
+USO
+    -Obrigatório:
+    -Usado: Sim
+    -Browse:
+]: #
+
 ZZB_CODVEI
 
 [
