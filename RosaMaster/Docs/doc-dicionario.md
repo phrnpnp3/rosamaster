@@ -30,7 +30,9 @@ ZZ8010 1-ZZ8_FILIAL+ZZ8_ID+ZZ8_SEQUEN
 
 ZZ9010 1-ZZ9_FILIAL+ZZ9_CODIGO
 
-ZZA010 1-ZZA_FILIAL+ZZ5_SEQUEN
+ZZA010 1-ZZA_FILIAL+ZZ5_IDFLUI
+
+ZZA010 1-ZZA_FILIAL+ZZ5_IDUMOV
 
 ## Campos
 
@@ -963,6 +965,66 @@ USO
     -Obrigatório:
     -Usado: Sim
     -Browse: Sim
+]: #
+
+ZZA_IDFLUI
+
+[
+CAMPO
+    -Tipo: 1-Caracter
+    -Tamanho: 10
+    -Decimal: 0
+    -Formato:
+    -Contexto: Real
+    -Propriedade: Alterar
+INFORMAÇÕES
+    -Titulo: Id Fluig
+    -Descição: Id Fluig
+    -Help:
+OPÇÕES
+    -Lista:
+    -Ini Padrão:
+    -Ini Browse:
+    -Modo Edição:
+    -Cons Padrão:
+VALIDAÇÕES
+    -Val Usuário:
+    -Val Sistema:
+    -Nivel:
+USO
+    -Obrigatório:
+    -Usado: Sim
+    -Browse:
+]: #
+
+ZZA_IDUMOV
+
+[
+CAMPO
+    -Tipo: 1-Caracter
+    -Tamanho: 10
+    -Decimal: 0
+    -Formato:
+    -Contexto: Real
+    -Propriedade: Alterar
+INFORMAÇÕES
+    -Titulo: Id Umov
+    -Descição: Id Umov
+    -Help:
+OPÇÕES
+    -Lista:
+    -Ini Padrão:
+    -Ini Browse:
+    -Modo Edição:
+    -Cons Padrão:
+VALIDAÇÕES
+    -Val Usuário:
+    -Val Sistema:
+    -Nivel:
+USO
+    -Obrigatório:
+    -Usado: Sim
+    -Browse:
 ]: #
 
 ZZA_SEQUEN
