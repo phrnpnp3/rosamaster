@@ -34,6 +34,8 @@ CLASS NP3EP001
     PRIVATE DATA cErro as Character
     PRIVATE DATA cMsg as Character
     PRIVATE DATA cRotina as Character
+    PRIVATE DATA cCodigo as Character
+    PRIVATE DATA cLoja as Character
     PRIVATE DATA lExist as Logical
     PUBLIC  METHOD New(oJson,aAux,cRotina) CONSTRUCTOR
     PRIVATE METHOD IsExist(cCGC)
@@ -42,6 +44,9 @@ CLASS NP3EP001
     PRIVATE METHOD ExcAuto()
     PUBLIC METHOD GetError()
     PUBLIC METHOD GetMsg()
+    PUBLIC METHOD GetCodigo()
+    PUBLIC METHOD GetLoja()
+    PRIVATE METHOD TypeField(cField,cValue)
 ENDCLASS
 
 // Construtor
@@ -55,16 +60,25 @@ METHOD New(oJson,aAux,cRotina) CLASS NP3EP001
         ::cErro := ""
         ::cMsg := ""
         ::cRotina := "MVC"//cRotina
+        ::cCodigo := GetSxEnum("SA1","A1_COD")
+        ::cLoja := "01"
         // Captura as informações do Json
         For i := 1 to Len(aAux)
-            aAdd(::aDados, {aAux[i], oJson:GetJsonText(aAux[i]), Nil})
+            // Trata os tipo
+            If aAux[i] == "A1_COD"
+                aAdd(::aDados, {aAux[i], ::cCodigo, Nil})
+            ElseIf aAux[i] == "A1_LOJA"
+                aAdd(::aDados, {aAux[i], ::cLoja, Nil})
+            Else
+                aAdd(::aDados, {aAux[i], ::TypeField(aAux[i],oJson:GetJsonText(aAux[i])), Nil})
+            EndIf
         Next     
         // Ordena o array
         If Len(::aDados) > 0
             ::aDados := FWVetByDic(::aDados, "SA1")
         EndIf
     Else
-        ::cMsg := "Cadastro de Cliente - Já cadastrado" 
+        ::cMsg := "JÁ EXISTE" 
     EndIf
 RETURN
 
@@ -112,7 +126,7 @@ METHOD Mvc() CLASS NP3EP001
             //Tenta realizar o Commit
             If oModel:CommitData()
                 lRet := .T.
-                ::cMsg := "Cadastro de Cliente - Cadastrado com Sucesso" 
+                ::cMsg := "SUCCESSO" 
             //Se não deu certo, altera a variável para false
             Else
                 lRet := .F.
@@ -155,3 +169,22 @@ RETURN ::cErro
 // Retorna Mensagem
 METHOD GetMsg() CLASS NP3EP001
 RETURN ::cMsg
+
+// Retorna Codigo
+METHOD GetCodigo() CLASS NP3EP001
+RETURN ::cCodigo
+
+// Retorna Loja
+METHOD GetLoja() CLASS NP3EP001
+RETURN ::cLoja
+
+// Trata o tipo de dados
+METHOD TypeField(cField,cValue) CLASS NP3EP001
+    Local xRet
+    Local cTipo := GetSX3Cache(cField, "X3_TIPO")
+    If cTipo = "D"
+        xRet := CTOD(cValue)
+    Else
+        xRet := cValue
+    EndIF
+RETURN xRet
