@@ -1,0 +1,29 @@
+{
+    "ZZB_IDFLUI":"000003",
+    "TAREFAS":[
+        {
+            "ZZB_SEQ":"01",
+            "ZZB_CODVEI":"000001",
+            "ZZB_DESVEI":"VEICULO TESTE01",
+            "ZZB_CODTAR":"000001",
+            "ZZB_DESTAR":"DESLOCAMENTO",
+            "ZZB_LOCDE":"FIL010101",
+            "ZZB_DESLDE":"FILIAL TESTES",
+            "ZZB_LOCPA":"CLI00000101",
+            "ZZB_DESLPA":"CASA CLIENTE TESTE",
+            "ZZB_OBSERV":"SAIR DA BASE PARA A CASA DO CLIENTE"
+        },
+        {
+            "ZZB_SEQ":"01",
+            "ZZB_CODVEI":"000001",
+            "ZZB_DESVEI":"VEICULO TESTE01",
+            "ZZB_CODTAR":"000001",
+            "ZZB_DESTAR":"DESLOCAMENTO",
+            "ZZB_LOCDE":"CLI00000101",
+            "ZZB_DESLDE":"CASA CLIENTE TESTE",
+            "ZZB_LOCPA":"REM000001",
+            "ZZB_DESLPA":"LOCAL DE REMOÇÃO DE TESTE",
+            "ZZB_OBSERV":"CASA DO CLIENTE PARA LOCAL DE REMOÇÃO"
+        }
+    ]
+}
