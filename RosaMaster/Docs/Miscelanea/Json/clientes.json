@@ -1,0 +1,29 @@
+{
+    "ADADOS":{
+        "A1_COD":"",
+        "A1_LOJA":"",
+        "A1_NOME":"TESTE 004",
+        "A1_PESSOA":"F",
+        "A1_NREDUZ":"TST 004",
+        "A1_END":"RUA TESTE",
+        "A1_BAIRRO":"BAIRRO TESTE",
+        "A1_CEP":"55555555",
+        "A1_EST":"PE",
+        "A1_DSCREG":"NORDESTE",
+        "A1_COD_MUN":"11606",
+        "A1_MUN":"RECIFE",
+        "A1_REGIAO":"007",
+        "A1_TIPO":"F",
+        "A1_CGC":"99999999996",
+        "A1_PAIS":"105",
+        "A1_PAISDES":"BRASIL", 
+        "A1_ENDCOB":"RUA TESTE",
+        "A1_BAIRROC":"BAIRRO TESTE",
+        "A1_CEPC":"55555555",
+        "A1_MUNC":"RECIFE",
+        "A1_ESTC":"PE",
+        "A1_XDTNASC":"02/02/1993",
+        "A1_XCEL":"999999998"
+    },
+    "ROTINA":"MVC"
+}
