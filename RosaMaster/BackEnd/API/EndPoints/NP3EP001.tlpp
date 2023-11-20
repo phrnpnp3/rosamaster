@@ -78,7 +78,7 @@ METHOD New(oJson,aAux,cRotina) CLASS NP3EP001
             ::aDados := FWVetByDic(::aDados, "SA1")
         EndIf
     Else
-        ::cMsg := "JÁ EXISTE" 
+        ::cErro := "JA EXISTE" 
     EndIf
 RETURN
 
