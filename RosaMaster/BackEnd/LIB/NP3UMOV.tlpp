@@ -1,0 +1,432 @@
+#Include 'RestFul.CH'
+#INCLUDE "TOTVS.CH"
+#INCLUDE "TopConn.ch"
+#INCLUDE 'RWMAKE.CH'
+#INCLUDE "TBICONN.CH"
+#include 'tlpp-core.th'
+/*
+#---------------------------------------------------------------#
+| Programa:| NP3UMOV                            Data:11/04/2023 |
+|---------------------------------------------------------------|
+| Autor:   | NP3 Tecnologia                                     |
+|---------------------------------------------------------------|
+| Objetivo:|Class de integração com umov                        |
+|---------------------------------------------------------------|
+|                        ALTERAÇÃES                             |
+|---------------------------------------------------------------|
+|     Analista      |   Data     |  Motivo                      |
+|---------------------------------------------------------------|
+|                   |            |                              |
+|                   |            |                              |
+#---------------------------------------------------------------#
+LINK TDN: ** NÃO TEM **
+*/
+CLASS NP3UMOV FROM NP3LIB
+    PRIVATE DATA cError     AS Character
+    PRIVATE DATA cWarning   AS Character
+    PRIVATE DATA oXML       AS Object
+    PRIVATE DATA nTimeOut   AS Integer
+    PRIVATE DATA aHeadOut   AS array
+    PRIVATE DATA cHeadRet   AS Character
+    PRIVATE DATA cRetPut    AS Character
+    PRIVATE DATA nStart     AS Integer
+    PRIVATE DATA lRet       AS Logical
+    PRIVATE DATA cCOutInit  AS Character
+    PRIVATE DATA cCOutEnd   AS Character
+    PRIVATE DATA cCOutKey   AS Character
+    PRIVATE DATA cCOutXml   AS Character
+    PRIVATE DATA cCOutRet   AS Character
+    PRIVATE DATA cContType  AS Character
+    PRIVATE DATA cUrl       AS Character
+    PRIVATE DATA cApi       AS Character
+    PRIVATE DATA cKey       AS Character 
+    PRIVATE DATA cSX5       AS Character
+    PRIVATE DATA cPATH      AS Character
+    PRIVATE DATA cDIR       AS Character
+    PRIVATE DATA cDES       AS Character
+    PRIVATE DATA cBatch     AS Character 
+    PRIVATE DATA cTxtErro   AS Character 
+    PRIVATE DATA cIdUmov    AS Character 
+    PUBLIC METHOD New() CONSTRUCTOR
+    PRIVATE METHOD Init(cCOutInit,cBatch)
+    PRIVATE METHOD Process(TagsIni,TagsFim,TagIni,TagFim,aStandard,aCustom)
+    PRIVATE METHOD Finish(cCOutInit,cMsgErr)
+    PRIVATE METHOD ConectUmov(cMsgErr)
+    PUBLIC METHOD ServiceLocal(aStandard,aCustom,cAltId,cAltIdIt,lCanc)
+    PUBLIC METHOD Items(aStandard,aCustom,cAltId,cAltIdIt,lCanc)
+    PUBLIC METHOD Schedules(aStandard,aCustom,cAltId,cAltIdIt,lCanc)
+    PUBLIC METHOD ScheduleItems(aStandard,aCustom,cAltId,cAltIdIt,lCanc)
+    PUBLIC METHOD Agent(aStandard,aCustom,cAltId,cAltIdIt,lCanc)
+    PUBLIC METHOD MsgUmov(cTipo,cCod)
+    PRIVATE METHOD RetUmovArq()
+    PRIVATE METHOD FtpUmovDw()
+    PUBLIC METHOD GetIdUmov()
+ENDCLASS 
+
+// Contrutor
+METHOD New() CLASS NP3UMOV
+    _Super:New()
+    ::cError        := ""
+    ::cWarning      := ""
+    ::oXML          := Nil
+    ::nTimeOut      := 120
+    ::aHeadOut      := {}
+    ::cHeadRet      := ""
+    ::cRetPut       := ""
+    ::lRet          := .T.
+    ::cCOutInit     := "----------> NP3 - INICIO DA INTEGRAÇÃO "
+    ::cCOutEnd      := "----------> NP3 - FIM DA INTEGRAÇÃO "
+    ::cCOutKey      := "----------> NP3 - APIKEY: "
+    ::cCOutXml      := "----------> NP3 - XML: "
+    ::cCOutRet      := "----------> NP3 - RETORNO: "
+    ::cContType     := "Content-Type: application/x-www-form-urlencoded"
+    ::cUrl          := 'https://api.umov.me/CenterWeb/api/'
+    ::cApi          := ""
+    ::cKey          := "39246e5cb05a1a777d3b8ce1e84911bcb70969"//GetMV("P3_APIKEY")
+    ::cSX5          := GetMV("P3_APISX5")//"1Z"
+    ::cPATH         := AllTrim(GetMV("P3_PATUMOV"))//"\uMov"
+    ::cDIR          := ::cPATH+AllTrim(GetMV("P3_DIRUMOV"))//"\importacao\"
+    ::cDES          := ::cPATH+AllTrim(GetMV("P3_DESUMOV"))//"\lidos\"
+    ::cBatch        := ""
+    ::cTxtErro      := ""
+    ::nStart        := Seconds()
+RETURN
+
+//Inicializa os metodos
+METHOD Init(cCOutInit,cBatch) CLASS NP3UMOV
+    ::cBatch := cBatch
+    ConOut(::cCOutInit  + cCOutInit)
+    Conout(::cCOutKey   + ::cKey)
+    aadd(::aHeadOut,::cContType)
+    ::cApi := ::cUrl+::cKey + ::cBatch
+    ::cXml := "data= " + ::cEnter
+RETURN
+
+//Processa o xml
+METHOD Process(TagsIni,TagsFim,TagIni,TagFim,aStandard,aCustom) CLASS NP3UMOV
+    Local nX 
+    DEFAULT TagsIni := ""
+    DEFAULT TagsFim := ""
+    If !Empty(TagsIni)
+        ::cXml   += TagsIni+::cEnter
+    EndIf
+    For nX := 1 to Len(aStandard)
+        ::cXml  += TagIni+::cEnter
+        //Monta o xml campos padrões
+        _Super:MontaXml(aStandard[nX])
+        //Monta o xml campos customizados
+        If Len(aCustom) > 0
+            If Len(aCustom[nX]) > 0
+                ::cXml += "  <customFields>"+::cEnter
+                _Super:MontaXml(aCustom[nX])
+                ::cXml += "  </customFields>"+::cEnter
+            EndIf
+        EndIf
+        ::cXml  += TagFim+::cEnter
+    Next
+    If !Empty(TagsFim)
+        ::cXml  += TagsFim
+    EndIf
+RETURN
+
+//Finaliza os metodos
+METHOD Finish(cCOutInit,cMsgErr) CLASS NP3UMOV
+	Conout(::cCOutXml + ::cXml)
+	::ConectUmov(cMsgErr)//Faz a conexão com o umov
+	Conout(::cCOutEnd + cCOutInit)
+RETURN
+
+//Conecta no umov
+METHOD ConectUmov(cMsgErr) CLASS NP3UMOV
+    Local oBjType
+	::cIdUmov := ""
+	::cRetPut := HttpPost(::cApi,"",::cXml,::nTimeOut,::aHeadOut,@::cHeadRet)
+	If ValType(::cRetPut) <> "U"
+		Conout(::cCOutRet + ::cRetPut)
+		::oXML := XmlParser(::cRetPut,"_",@::cError,@::cWarning)
+		::cTxtErro := ""
+		If  "ERROR" $ UPPER(::cRetPut)
+			::cTxtErro := "Ocorreu um erro de atualização no uMov:" + ::cEnter
+		Else
+            oBjType := ::oXML
+            If AttIsMemberOf(oBjType:_RESULT, "_RESOURCEID")
+                // ::cIdUmov := ::oXML:_RESULT:_ENTRIES:_ENTRY:_ALTERNATIVEIDENTIFIER:TEXT
+                ::cIdUmov := ::oXML:_RESULT:_RESOURCEID:TEXT
+            EndIf
+		EndIf
+		If !Empty(::cTxtErro)
+			::lRet := .F.
+			// If Type("::oXML") <> "U"
+				::cTxtErro += ::cEnter + ::MsgUmov(::oXML:_Result:_StatusCode:Text)//NP3-25/10/2022
+				::cTxtErro += ::cEnter + ::oXML:_Result:_StatusCode:Text + " - " + ::oXML:_Result:_Errors:Text //NP3-25/10/2022
+			// Else 
+			// 	::cTxtErro += "Erro na integração e no retorno na criação do objeto oXML."
+			// EndIf
+			If ::IsBlind
+				FwLogMsg("INFO", /*cTransactionId*/, "UMOV", FunName(), "", "01", ::cTxtErro, 0, (::nStart - Seconds()), {}) // nStart Ã© declarada no inicio da função
+			Else
+				MsgStop(::cTxtErro,"Atenção")
+			Endif
+		EndIf
+	Else
+		FwLogMsg("INFO", /*cTransactionId*/, "UMOV", FunName(), "", "01", "Erro no retorno do HTTPPOST = NIL", 0, (::nStart - Seconds()), {}) // nStart Ã© declarada no inicio da função
+	Endif
+RETURN
+
+//Locais do umov
+METHOD ServiceLocal(aStandard,aCustom,cAltId,cAltIdIt,lCanc) CLASS NP3UMOV
+	Local cCOutInit := "DE LOCAIS DO UMOV "
+	Local cMsgErr   := "cadastro de Locais:" //TODO: ALTERA DE ACORDO COM O CLIENTE(COLOCAR EM PARAMETRO?)
+	Local cBatch    := '/batch/serviceLocals.xml'
+	DEFAULT aStandard   := {}
+    DEFAULT aCustom     := {}
+    DEFAULT cAltId      := ""
+    DEFAULT cAltIdIt    := ""
+    DEFAULT lCanc       := .F.
+
+	If !Empty(cAltId)// Se enviar o ID é uma alteração
+		cBatch := "/serviceLocal/alternativeIdentifier/"+AllTrim(cAltId)+".xml"
+        If lCanc// Se enviar o cancelamento
+            aStandard := {}
+            aCustom := {} // Limpa os arrays
+            cCOutInit := "DE CANCELAMENTO DE LOCAIS DO UMOV "
+            aAdd(aStandard,{{"active","false"}})
+        EndIf
+		::Init(cCOutInit,cBatch)
+		::Process("","","<serviceLocal>","</serviceLocal>",aStandard,aCustom)
+	Else
+		::Init(cCOutInit,cBatch)
+		::Process("<serviceLocals>","</serviceLocals>","<serviceLocal>","</serviceLocal>",aStandard,aCustom)
+	EndIf
+	::Finish(cCOutInit,cMsgErr)
+RETURN ::lRet
+
+//Items do umov
+METHOD Items(aStandard,aCustom,cAltId,cAltIdIt,lCanc) CLASS NP3UMOV
+    Local cCOutInit := "DE ITEM DO UMOV "
+    Local cMsgErr   := "cadastro de produtos ou Serviços:" //TODO: ALTERA DE ACORDO COM O CLIENTE(COLOCAR EM PARAMETRO?)
+    Local cBatch    := '/batch/items.xml'
+    DEFAULT aStandard   := {}
+    DEFAULT aCustom     := {}
+    DEFAULT cAltId      := ""
+    DEFAULT cAltIdIt    := ""
+    DEFAULT lCanc       := .F.
+
+    If !Empty(cAltId)// Se enviar o ID é uma alteração
+        cBatch    := "/item/alternativeIdentifier/"+AllTrim(cAltId)+".xml"
+        If lCanc// Se enviar o cancelamento
+            aStandard := {}
+            aCustom := {} // Limpa os arrays
+            cCOutInit := "DE CANCELAMENTO DE ITEM DO UMOV "
+            aAdd(aStandard,{{"active","false"}})
+        EndIf
+        ::Init(cCOutInit,cBatch)
+        ::Process("","","<item>","</item>",aStandard,aCustom)
+    Else
+        ::Init(cCOutInit,cBatch)
+        ::Process("<items>","</items>","<item>","</item>",aStandard,aCustom)
+    EndIf
+    ::Finish(cCOutInit,cMsgErr)
+RETURN ::lRet
+
+//Agendamento do umov
+METHOD Schedules(aStandard,aCustom,cAltId,cAltIdIt,lCanc) CLASS NP3UMOV
+    Local cCOutInit     := "DE AGENDAMENTO DO UMOV "
+    Local cMsgErr       := "cadastro de OS:" //TODO: ALTERA DE ACORDO COM O CLIENTE(COLOCAR EM PARAMETRO?)
+    Local cBatch        := '/batch/schedules.xml'
+    DEFAULT aStandard   := {}
+    DEFAULT aCustom     := {}
+    DEFAULT cAltId      := ""
+    DEFAULT cAltIdIt    := ""
+    DEFAULT lCanc       := .F.
+
+    If !Empty(cAltId)// Se enviar o ID é uma alteração
+        cBatch := "/schedule/alternativeIdentifier/"+AllTrim(cAltId)+".xml"
+        If lCanc// Se enviar o cancelamento
+            aStandard := {}
+            aCustom := {} // Limpa os arrays
+            cCOutInit := "DE CANCELAMENTO DE AGENDAMENTO DO UMOV "
+            aAdd(aStandard,{{"situation",{{{"id","70"}}}}})
+        EndIf
+        ::Init(cCOutInit,cBatch)
+        ::Process("","","<schedule>","</schedule>",aStandard,aCustom)
+    Else
+        ::Init(cCOutInit,cBatch)
+        ::Process("<schedules>","</schedules>","<schedule>","</schedule>",aStandard,aCustom)
+    EndIf
+    ::Finish(cCOutInit,cMsgErr)
+RETURN ::lRet
+
+//Items do agendamento do umov
+METHOD ScheduleItems(aStandard,aCustom,cAltId,cAltIdIt,lCanc) CLASS NP3UMOV
+    Local cCOutInit := "DE ITEM DO AGENDAMENTO DO UMOV "
+    Local cMsgErr   := "cadastro de Produtos ou Serviços da OS:" //TODO: ALTERA DE ACORDO COM O CLIENTE(COLOCAR EM PARAMETRO?)
+    Local cBatch    := '/batch/scheduleItems.xml'
+    DEFAULT aStandard   := {}
+    DEFAULT aCustom     := {}
+    DEFAULT cAltId      := ""
+    DEFAULT cAltIdIt    := ""
+    DEFAULT lCanc       := .F.
+
+    If !Empty(cAltId)// Se enviar o ID é uma alteração
+		cBatch := "/scheduleItem/schedule/"+AllTrim(cAltId)+"/item/"+AllTrim(cAltIdIt)+".xml"
+        // If lCanc// Se enviar o cancelamento
+            aStandard := {}
+            aCustom := {} // Limpa os arrays
+            cCOutInit := "DE CANCELAMENTO DE ITENS DO AGENDAMENTO DO UMOV "
+            // aAdd(aStandard,{{"active","false"}})
+        // EndIf
+		::Init(cCOutInit,cBatch)
+		::Process("","","<scheduleItem>","</scheduleItem>",aStandard,aCustom)
+	Else
+        ::Init(cCOutInit,cBatch)
+        ::Process("<scheduleItems>","</scheduleItems>","<scheduleItem>","</scheduleItem>",aStandard,aCustom)
+    EndIf
+    ::Finish(cCOutInit,cMsgErr)
+RETURN ::lRet
+
+//Agent do umov
+METHOD Agent(aStandard,aCustom,cAltId,cAltIdIt,lCanc) CLASS NP3UMOV
+	Local cCOutInit := "DE PESSOAS DO UMOV "
+	Local cMsgErr   := "cadastro de Mecanicos:" //TODO: ALTERA DE ACORDO COM O CLIENTE(COLOCAR EM PARAMETRO?)
+	Local cBatch    := '/agent.xml'
+	DEFAULT aStandard   := {}
+    DEFAULT aCustom     := {}
+    DEFAULT cAltId      := ""
+    DEFAULT cAltIdIt    := ""
+    DEFAULT lCanc       := .F.
+
+	If !Empty(cAltId)// Se enviar o ID é uma alteração
+		cBatch := "/agent/alternativeIdentifier/"+AllTrim(cAltId)+".xml"
+        If lCanc// Se enviar o cancelamento
+            aStandard := {}
+            aCustom := {} // Limpa os arrays
+            cCOutInit := "DE CANCELAMENTO DE AGENT DO UMOV "
+            aAdd(aStandard,{{"active","false"}})
+        EndIf
+	EndIf
+	::Init(cCOutInit,cBatch)
+	::Process(,,"<agent>","</agent>",aStandard,aCustom)
+	::Finish(cCOutInit,cMsgErr)
+RETURN ::lRet
+
+//Tratamento de mensagens de erro do umov
+METHOD MsgUmov(cTipo,cCod) CLASS NP3UMOV
+    Local cMsg := ::cEnter+"Verifique o "
+    Local aSX5 := FwGetSx5(::cSX5, cCod)
+	DEFAULT cCod := ""
+    If ValType(aSX5) == "A"
+	    If Len(aSX5) > 0
+            cMsg += cTipo+::cEnter+aSX5[1,4]
+        Else 
+            cMsg += cTipo+::cEnter+"Tabela "+cCod+" não encontrada no protheus - "+::cError
+        EndIf
+	Else
+	    cMsg += cTipo+::cEnter+"Erro não catalogado - "+::cError
+	EndiF 
+	/*
+    '400'-'Não Ã© permitido caracteres especiais, falta de dados ou dados com o tipo errado.'
+    '401'-'A chave da API estÃ¡ incorreta, verifique o parametro P3_APIKEY'
+    '404'-'ID usado não existe'
+    '429'-'foi realizado mais requests que o permitido em um determinado perÃ­odo de tempo.'
+    '501'-'Essa entidades não estÃ¡ disponÃ­veis via API'
+    '504'-'O servidor não conseguiu responder em tempo'
+    */
+    cMsg += ::cEnter
+return cMsg 
+
+//FTP para baixar os arquivos do umov
+METHOD FtpUmovDw() CLASS NP3UMOV
+
+	Local cServer := GetMV("P3_SRVFTP")
+	Local nPort   := GetMV("P3_PORTFTP")
+	Local cUser   := GetMV("P3_USRFTP")
+	Local cPsw    := GetMV("P3_PSWFTP")
+	Local cDir    := GetMV("P3_DIRFTP")
+    Local aArqs   := {}
+    Local nX
+    Local lRet    := .T.
+
+    //Cria uma pasta na raiz do protheus para realizar a cÃ³pia do arquivo
+	if !ExistDir( ::cPATH )
+       MakeDir( ::cPATH)
+	endif
+	if !ExistDir(::cDIR)
+       MakeDir(::cDIR)
+	endif
+    if !ExistDir(::cDES)
+       MakeDir(::cDES)
+	endif
+
+	//Conecta no DiretÃ³rio desejados
+	if !FTPConnect( cServer , nPort , cUser , cPsw )
+		ConOut("Nao foi possivel se conectar!!")
+		lRet := .f.
+	else
+		ConOut( "Conectado com o FTP !! " )
+		IF !FTPDirChange(cDir)
+			ConOut("Não foi possÃ­vel conectar no diretÃ³rio desejado!")
+            lRet := .f.
+		Else
+			//Captura todos os arquivos
+			aArqs := FTPDirectory( "*.CSV", )
+			IF Len(aArqs) > 0
+				For nX := 1 to Len(aArqs)
+					IF !FTPDownload(::cDIR+aArqs[nX][1],aArqs[nX][1])
+						ConOut("Não foi possÃ­vel fazer download do arquivo "+aArqs[nX][1]+"!")
+                        lRet := .f.
+					Else
+						If !FTPRenameFile(aArqs[nX][1],StrTran(aArqs[nX][1],".csv",".sucess"))
+							ConOut("Não foi possÃ­vel renomear o arquivo "+aArqs[nX][1]+" na origem!")
+                            lRet := .f.
+						Endif
+					Endif
+				Next nX
+			Else
+				ConOut("Não contÃ©m arquivos a serem processados!")
+                lRet := .f.
+			Endif
+		EndIf
+		FTPDisconnect()
+	Endif
+Return lRet
+
+//Retorno do umov via arquivo
+METHOD RetUmovArq() CLASS NP3UMOV
+	Local aDirArq   := {}
+	Local cArqImp   := ""
+	// Local oFile
+	// Local cBuffer   := ""
+	// Local aAux      := {}
+	Local i,j
+
+	//Excuta o downloado dos arquivos via ftp
+	aDirArq := Directory(::cDIR+"*.CSV")
+	If Len(aDirArq) > 0
+		cArqImp  := AllTrim(aDirArq[1,1])
+		Conout("NP3LIB - ["+DTOC(Date())+"-"+Time()+"] - RETUMOVARQ - Lendo arquivo "+cArqImp)
+		//Definindo o arquivo a ser lidoS
+		If ::LeCsv(::cDir+cArqImp)
+			//Move o arquivo da pasta importacao para a pasta de arquivo lidos
+			__CopyFile( ::cDIR+lower(cArqImp), ::cDES+lower(cArqImp) )
+			// Exclui o arquivo lido da pasta de importacao
+			If File(::cDES+lower(cArqImp))
+				FErase(::cDIR+lower(cArqImp))
+			endif
+		EndIf
+	EndIf
+	//Remove caracter especial
+	If Len(::aDados)>0
+		For i := 1 to Len(::aDados)
+			For j := 1 to Len(::aDados[i])
+				If !("ï»¿" $ ::aDados[i,j] )
+					::aDados[i,j] := DecodeUTF8(::aDados[i,j], "cp1252")
+				EndIf
+			Next
+		Next
+	EndIf
+RETURN {::aDados,cArqImp}
+
+// Retorna o Id do umov 
+METHOD GetIdUmov() CLASS NP3UMOV
+RETURN ::cIdUmov

@@ -16,8 +16,11 @@
 ![duplicado](https://github.com/phrnpnp3/rosamaster/blob/JLS/RosaMaster/Docs/Miscelanea/imagens/cadastro_de_veiculos_duplicado.PNG?raw=true)
 ## Integração com Umov
 ### Incluir
-![duplicado](https://github.com/phrnpnp3/rosamaster/blob/JLS/RosaMaster/Docs/Miscelanea/imagens/cadastro_de_veiculos_umov_incluir.PNG?raw=true)
+![Incluir](https://github.com/phrnpnp3/rosamaster/blob/JLS/RosaMaster/Docs/Miscelanea/imagens/cadastro_de_veiculos_umov_incluir.PNG?raw=true)
+![Incluir](https://github.com/phrnpnp3/rosamaster/blob/JLS/RosaMaster/Docs/Miscelanea/imagens/cadastro_de_veiculos_umov_me_incluir.PNG?raw=true)
 ### Alterar
-![duplicado](https://github.com/phrnpnp3/rosamaster/blob/JLS/RosaMaster/Docs/Miscelanea/imagens/cadastro_de_veiculos_umov_alterar.PNG?raw=true)
+![Alterar](https://github.com/phrnpnp3/rosamaster/blob/JLS/RosaMaster/Docs/Miscelanea/imagens/cadastro_de_veiculos_umov_alterar.PNG?raw=true)
+![Alterar](https://github.com/phrnpnp3/rosamaster/blob/JLS/RosaMaster/Docs/Miscelanea/imagens/cadastro_de_veiculos_umov_me_alterar.PNG?raw=true)
 ### Excluir
-![duplicado](https://github.com/phrnpnp3/rosamaster/blob/JLS/RosaMaster/Docs/Miscelanea/imagens/cadastro_de_veiculos_umov_excluir.PNG?raw=true)
+![Excluir](https://github.com/phrnpnp3/rosamaster/blob/JLS/RosaMaster/Docs/Miscelanea/imagens/cadastro_de_veiculos_umov_excluir.PNG?raw=true)
+![Excluir](https://github.com/phrnpnp3/rosamaster/blob/JLS/RosaMaster/Docs/Miscelanea/imagens/cadastro_de_veiculos_umov_me_excluir.PNG?raw=true)

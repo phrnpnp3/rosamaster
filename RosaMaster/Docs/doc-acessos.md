@@ -26,3 +26,31 @@ wasleysantos  |wasley.santos@np3tecnologia.com.br
 Todos estão com a senha: Np3Tecn0log1@
 
 Link de acesso ao [Fluig](https://rosamaster129518.fluig.cloudtotvs.com.br/portal/home)
+
+## Umov.Me
+
+### Chave API 
+
+39246e5cb05a1a777d3b8ce1e84911bcb70969
+
+### IDs das atividades
+
+- Chegada no Local: chlocal
+- Funeral: funeral
+- Cortejo: cortejo
+- Inicio Deslocamento: deslocamento
+- Pedido de Venda: pedido
+
+### Cadastroo de Itens
+
+ID do subgrupo: 
+- Cortejo: 0001
+- Funeral: 0002
+- Vendas: 0003
+
+### Tipo de tarefas
+
+- Buscar Familiares ID: buscar
+- Cortejo ID: cortejo
+- Funeral ID: funeral
+- Local de Remoção ID: remocao
