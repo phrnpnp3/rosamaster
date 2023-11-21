@@ -125,7 +125,7 @@ Static Function P3P05023(oModel)
     Local lRet := .T.
     FWFormCommit(oModel)
     // Integração com umov
-    MsgInfo("Integração com o Umov em desenvolvimento")// U_P3P0502A(oModel) // TODO: Habilitar
+    U_P3P0502A(oModel)
 Return lRet
 
 /*-------------------------------------------------------Funções-------------------------------------------------------*/
@@ -137,22 +137,16 @@ User Function P3P0502A(oModel)
     Local oUMOV := NP3UMOV():New()
     Local aStandard     := {}
     Local aCustom       := {}
-    Local nVezes        := 1
     Local cTxt := ""
     Local cMsg := ""
     // Alimenta as informações
-    aAdd(aStandard,{;
-        {"description",POSICIONE("SM0",1,cEmpAnt+oZZ7:GetValue("ZZ7_CODIGO"),"M0_FILIAL")},;
+    aAdd(aStandard,{; 
         {"active","true"},;
-        {"alternativeIdentifier",GetValue("ZZ7_CODIGO")},;
-        {"corporateName",POSICIONE("SM0",1,cEmpAnt+oZZ7:GetValue("ZZ7_CODIGO"),"M0_NOME")},;
-        {"country","Brasil"},;// TODO: verificar
-        {"state",POSICIONE("SM0",1,cEmpAnt+oZZ7:GetValue("ZZ7_CODIGO"),"M0_ESTENT")},;
-        {"city",POSICIONE("SM0",1,cEmpAnt+oZZ7:GetValue("ZZ7_CODIGO"),"M0_CIDENT")},;
-        {"street",POSICIONE("SM0",1,cEmpAnt+oZZ7:GetValue("ZZ7_CODIGO"),"M0_ENDENT")},;
-        {"streetNumber","0"},;
-        {"zipCode",POSICIONE("SM0",1,cEmpAnt+oZZ7:GetValue("ZZ7_CODIGO"),"M0_CEPENT")},;
-        {"cityNeighborhood",POSICIONE("SM0",1,cEmpAnt+oZZ7:GetValue("ZZ7_CODIGO"),"M0_BAIRSENT")};
+        {"agentType",{{{"alternativeIdentifier","1"}}}},;
+        {"login",oZZ7:GetValue("ZZ7_DESCR")},;
+        {"name",oZZ7:GetValue("ZZ7_DESCR")},;
+        {"password","12345"},;
+        {"alternativeIdentifier",oZZ7:GetValue("ZZ7_CODIGO")};
     })
     aAdd(aCustom,{})
     // Se for exclução
@@ -160,19 +154,23 @@ User Function P3P0502A(oModel)
         // Se estiver integrado com o umov
         IF !Empty(oZZ7:GetValue("ZZ7_IDMOV"))
             // Executa integração de cancelamento
-            lOk := oUMOV:ServiceLocal(aStandard,aCustom,nVezes,oZZ7:GetValue("ZZ7_CODIGO"),,.t.)
+            lOk := oUMOV:Agent(aStandard,aCustom,oZZ7:GetValue("ZZ7_CODIGO"),,.t.)
             cTxt := "Excluído com sucesso";cMsg := "Erro ao tentar excluir no umov:"
         EndIf
     Else
         // Se estiver integrado com o umov
         IF !Empty(oZZ7:GetValue("ZZ7_IDMOV"))
             // Executa integração de alteração
-            lOk := oUMOV:ServiceLocal(aStandard,aCustom,nVezes,oZZ7:GetValue("ZZ7_CODIGO"))
+            lOk := oUMOV:Agent(aStandard,aCustom,oZZ7:GetValue("ZZ7_CODIGO"))
             cTxt := "Alterado com sucesso";cMsg := "Erro ao tentar alterar no umov:"
         Else
             // Executa integração de inclusão
-            lOk := oUMOV:ServiceLocal(aStandard,aCustom,nVezes)
+            lOk := oUMOV:Agent(aStandard,aCustom)
             cTxt := "Incuído com sucesso";cMsg := "Erro ao tentar incluir no umov:"
+            If RecLock('ZZ7',.f.)
+                ZZ7_IDMOV := oUMOV:GetIdUmov()
+                ZZ7->(MsUnlock())
+            EndIf
         EndIf
         If lOk
             MsgInfo(cTxt,"Integração UMOV")
@@ -185,15 +183,11 @@ Return
 // Legandas
 User Function P3P0502B()
 	Local oLegend as object
-
     oLegend := FWLegend():New()
-
     oLegend:Add("", "BR_VERDE"      , "Integrado no Umov")
     oLegend:Add("", "BR_VERMELHO"   , "Não Integrado no Umov")
-    
     oLegend:Activate()
     oLegend:View()
     oLegend:Deactivate()
-
     FreeObj(oLegend)
 Return .T.
