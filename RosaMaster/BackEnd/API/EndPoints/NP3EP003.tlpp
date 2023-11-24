@@ -1,0 +1,270 @@
+#Include 'Protheus.ch'
+#Include 'FWMVCDEF.ch'
+#Include 'RestFul.CH'
+#INCLUDE "TOTVS.CH"
+#INCLUDE "TopConn.ch"
+#INCLUDE 'COLORS.CH'
+#INCLUDE 'FONT.CH'
+#INCLUDE 'RWMAKE.CH'
+#INCLUDE "TBICONN.CH"
+#include "parmtype.ch"
+#INCLUDE "FWADAPTEREAI.CH"
+#Include "TBICODE.CH"
+#include 'fileio.ch'
+#include 'tlpp-core.th'
+/*
+#---------------------------------------------------------------#
+| Programa:| NP3EP003                          Data:10/11/2023  |
+|---------------------------------------------------------------|
+| Autor:   | NP3 Tecnologia                                     |
+|---------------------------------------------------------------|
+| Objetivo:| Classe dos movimentos das tarefas                  |
+|---------------------------------------------------------------|
+|                        ALTERAÇÕES                             |
+|---------------------------------------------------------------|
+|     Analista      |   Data     |  Motivo                      |
+|---------------------------------------------------------------|
+|                   |            |                              |
+|                   |            |                              |
+#---------------------------------------------------------------#
+LINK TDN: ** NÃO TEM **
+*/
+CLASS NP3EP003
+    PRIVATE DATA oItens as Object
+    PRIVATE DATA aItem as Array
+    PRIVATE DATA aItens as Array
+    PRIVATE DATA aAuxIte as Array
+    PRIVATE DATA oTarefas as Object
+    PRIVATE DATA aTarefa as Array
+    PRIVATE DATA aTarefas as Array
+    PRIVATE DATA aAuxTar as Array
+    PRIVATE DATA cErro as Character
+    PRIVATE DATA cMsg as Character
+    PRIVATE DATA ZZB_IDFLUI as Character
+    PUBLIC  METHOD New(oJson,aAux,cId) CONSTRUCTOR
+    PUBLIC  METHOD Create()
+    PUBLIC METHOD GetError()
+    PUBLIC METHOD GetMsg()
+    PRIVATE METHOD TypeField(cField,cValue)
+    PRIVATE METHOD AddGird(oModel,oModelGridZZB,aStrGridZZB,oModelGridZZC,aStrGridZZC)
+ENDCLASS
+
+// Construtor
+METHOD New(oJson,aAux,cId) CLASS NP3EP003 
+    Local i
+    Local j
+    Local k
+    Local l
+    ::ZZB_IDFLUI := cId
+    // Inicia as variaveis de tarefas
+    ::oTarefas := oJson['TAREFAS']
+    ::aTarefas := {}
+    // Captura as informações do Json
+    For i := 1 to Len(::oTarefas)
+        // Tarefas
+        ::aAuxTar := ::oTarefas[i]['TAREFA']:GetNames()
+        ::aTarefa := {}
+        For j := 1 to Len(::aAuxTar)
+            // Trata o tipo de dados quando o campo for diferente de ITENS
+            If ::aAuxTar[j] <> "ITENS"
+                aAdd(::aTarefa, {::aAuxTar[j], ::TypeField(::aAuxTar[j],::oTarefas[i]['TAREFA']:GetJsonText(::aAuxTar[j])), Nil})
+            Else
+                // Inicia as variaveis de itens
+                ::oItens := ::oTarefas[i]['TAREFA']['ITENS']
+                ::aItens := {}
+                For k := 1 to Len(::oItens)
+                    // itens
+                    ::aAuxIte := ::oItens[k]:GetNAmes()
+                    ::aItem := {}
+                    For l := 1 to Len(::aAuxIte)
+                        aAdd(::aItem, {::aAuxIte[l], ::TypeField(::aAuxIte[l],::oItens[k]:GetJsonText(::aAuxIte[l])), Nil})
+                    Next
+                    // Ordena o array do item
+                    If Len(::aItem) > 0
+                        ::aItem := FWVetByDic(::aItem, "ZZC")
+                    EndIf
+                    aAdd(::aItens,::aItem)
+                Next
+            EndIF
+        Next
+        // Ordena o array do tarefas
+        If Len(::aTarefa) > 0
+            ::aTarefa := FWVetByDic(::aTarefa, "ZZB")
+            // adiciona os itens na ultima posição do array
+            aAdd(::aTarefa,{})
+            ::aTarefa[Len(::aTarefa)] := {"ITENS",::aItens}
+            // Reinicia a variavel caso proxima tarefa não entre no else de itens.
+            ::aItens := {}
+        EndIf
+        aAdd(::aTarefas,::aTarefa)
+    Next 
+RETURN
+// Cria as tarefas
+METHOD Create() CLASS NP3EP003
+    Local lRet := .f.
+    Local oModel
+    Local oModelMaster
+    Local oModelGridZZB
+    Local oStrGridZZB
+    Local aStrGridZZB
+    Local oModelGridZZC
+    Local oStrGridZZC
+    Local aStrGridZZC
+    Local nOpcao := 3 
+    Local aErro := {}
+    // Aqui ocorre o instaciamento do modelo de dados (Model)
+	oModel := FWLoadModel( 'NP3P0505' )
+    oModel:SetOperation(nOpcao)
+    oModel:Activate()
+    // objetos da enchoice
+	oModelMaster 	:= oModel:GetModel('ZZBMASTER') // Instanciamos apenas referentes aos dados
+	oStructMaster 	:= oModelMaster:GetStruct() // Obtemos a estrutura de dados da enchoice
+	aStructMaster	:= oStructMaster:GetFields() // Obtemos os campos
+    // objetos do grid da tabela ZZB - Movimento Tarefas
+	oModelGridZZB	:= oModel:GetModel('ZZBGRID') // Intanciamos apenas a parte do modelo referente ao grid
+	oStrGridZZB		:= oModelGridZZB:GetStruct() // Obtemos a estrutura de dados do grid
+	aStrGridZZB		:= oStrGridZZB:GetFields() // Obtemos os campos
+    // objetos do grid da tabela ZZC - Itens Movimento Tarefas
+	oModelGridZZC	:= oModel:GetModel('ZZCGRID') // Intanciamos apenas a parte do modelo referente ao grid
+	oStrGridZZC		:= oModelGridZZC:GetStruct() // Obtemos a estrutura de dados do grid
+	aStrGridZZC		:= oStrGridZZC:GetFields() // Obtemos os campos
+    // Alimenta o cabaçalho
+    If ( oModel:SetValue( 'ZZBMASTER', "ZZB_IDFLUI",::ZZB_IDFLUI ))
+        lRet := .t.
+    EndIf
+    If lRet
+        // Alimenta grid tarefas
+        If lRet .And. Len(::aTarefas) > 0
+            lRet := ::AddGird(oModel,oModelGridZZB,aStrGridZZB,oModelGridZZC,aStrGridZZC)
+        EndIf
+        // Faz-se a valida?o dos dados
+		If lRet .And. ( lRet := oModel:VldData() )
+			// Se o dados foram validados faz-se a gravação efetiva dos dados (commit)
+			If oModel:CommitData()
+                lRet := .T.
+                ::cMsg := "Cadastro de tarefas - Realizado com Sucesso" 
+            Else
+                lRet := .f.
+            EndIf
+		EndIf
+	EndIf
+    //Se não deu certo a inclusão, mostra a mensagem de erro
+    If !lRet
+		// Se os dados n? foram validados obtemos a descri?o do erro para gerar LOG ou mensagem de aviso
+		aErro := oModel:GetErrorMessage()
+		::cErro += "Id do formulário de origem:" 	+ ' [' + AllToChar( aErro[1] ) + ']' 
+		::cErro += "Id do campo de origem: " 		+ ' [' + AllToChar( aErro[2] ) + ']' 
+		::cErro += "Id do formulário de erro: " 	+ ' [' + AllToChar( aErro[3] ) + ']' 
+		::cErro += "Id do campo de erro: " 			+ ' [' + AllToChar( aErro[4] ) + ']' 
+		::cErro += "Id do erro: " 					+ ' [' + AllToChar( aErro[5] ) + ']' 
+		::cErro += "Mensagem do erro: " 			+ ' [' + AllToChar( aErro[6] ) + ']' 
+		::cErro += "Mensagem da solução: " 			+ ' [' + AllToChar( aErro[7] ) + ']' 
+		::cErro += "Valor atribuído: " 				+ ' [' + AllToChar( aErro[8] ) + ']' 
+		::cErro += "Valor anterior: " 				+ ' [' + AllToChar( aErro[9] ) + ']' 
+	EndIf
+    // Desativamos o Model
+	oModel:DeActivate()
+RETURN lRet
+
+// Retorna Erro
+METHOD GetError() CLASS NP3EP003
+RETURN ::cErro
+
+// Retorna Mensagem
+METHOD GetMsg() CLASS NP3EP003
+RETURN ::cMsg
+
+// Trata o tipo de dados
+METHOD TypeField(cField,cValue) CLASS NP3EP003
+    Local xRet
+    Local cTipo := GetSX3Cache(cField, "X3_TIPO")
+    If cTipo = "D"
+        xRet := CTOD(cValue)
+    Else
+        xRet := cValue
+    EndIF
+RETURN xRet
+
+// Metodo de montar o grid
+METHOD AddGird(oModel,oModelGridZZB,aStrGridZZB,oModelGridZZC,aStrGridZZC) CLASS NP3EP003
+	Local nI       := 0
+	Local nJ	   := 0
+	Local nK	   := 0
+	Local nL	   := 0
+	Local nItErro  := 0
+	Local lRet     := .T.
+    Local aErro    := {}
+	For nI := 1 To Len(::aTarefas)
+        // tenta adicionar linha
+		If  ( nItErro := oModelGridZZB:AddLine() ) = 0
+			lRet    := .F.
+            ::cErro := "Erro ao adicionar linha no grid de tarefas"
+			Exit
+		EndIf
+		if lRet
+			For nJ := 1 To Len( ::aTarefas[nI] )
+                ::aItens := {}
+				// Verifica se os campos passados existem na estrutura de tarefa
+				If ( aScan( aStrGridZZB, { |x| AllTrim( x[3] ) ==  AllTrim( ::aTarefas[nI][nJ][1] ) } ) ) > 0 .or. ::aTarefas[nI][nJ][1] == "ITENS" 
+					If !::aTarefas[nI][nJ][1] == "ITENS" 
+                        // Caso a atribuição não possa ser feita, por algum motivo (validação, por exemplo) o método SetValue retorna .F.
+                        If !( oModel:SetValue('ZZBGRID', ::aTarefas[nI][nJ][1], ::aTarefas[nI][nJ][2] ) )
+                            lRet    := .F.
+                            aErro := oModel:GetErrorMessage()
+                            ::cErro += "Id do formulário de origem:" 	+ ' [' + AllToChar( aErro[1] ) + ']' 
+                            ::cErro += "Id do campo de origem: " 		+ ' [' + AllToChar( aErro[2] ) + ']' 
+                            ::cErro += "Id do formulário de erro: " 	+ ' [' + AllToChar( aErro[3] ) + ']' 
+                            ::cErro += "Id do campo de erro: " 			+ ' [' + AllToChar( aErro[4] ) + ']' 
+                            ::cErro += "Id do erro: " 					+ ' [' + AllToChar( aErro[5] ) + ']' 
+                            ::cErro += "Mensagem do erro: " 			+ ' [' + AllToChar( aErro[6] ) + ']' 
+                            ::cErro += "Mensagem da solução: " 			+ ' [' + AllToChar( aErro[7] ) + ']' 
+                            ::cErro += "Valor atribuído: " 				+ ' [' + AllToChar( aErro[8] ) + ']' 
+                            ::cErro += "Valor anterior: " 				+ ' [' + AllToChar( aErro[9] ) + ']' 
+                            Exit
+                        EndIf
+                    Else
+                        ::aItens := ::aTarefas[nI][nJ][2]
+                    EndIf
+				EndIf
+			Next
+            If lRet
+                For nK := 1 To Len(::aItens)
+                    // tenta adicionar linha
+                    oModelGridZZC:GoLine(oModelGridZZC:GetQtdLine())//Vá para ultima linha
+                    IF !Empty(oModelGridZZC:GetValue("ZZC_ITEM"))//se não tiver vazio adciona nova linha
+                        If  ( nItErro := oModelGridZZC:AddLine() ) = 0
+                            lRet    := .F.
+                            ::cErro := "Erro ao adicionar linha no grid de tarefas"
+                            Exit
+                        EndIf
+                    EndIf
+                    If lRet
+                        For nL := 1 To Len( ::aItens[nK] )
+                            // Verifica se os campos passados existem na estrutura de tarefa
+                            If ( aScan( aStrGridZZC, { |x| AllTrim( x[3] ) ==  AllTrim( ::aItens[nK][nL][1] ) } ) ) > 0 
+                                // Caso a atribuição não possa ser feita, por algum motivo (validação, por exemplo) o método SetValue retorna .F.
+                                If !( oModel:SetValue('ZZCGRID', ::aItens[nK][nL][1], ::aItens[nK][nL][2] ) )
+                                    lRet    := .F.
+                                    aErro := oModel:GetErrorMessage()
+                                    ::cErro += "Id do formulário de origem:" 	+ ' [' + AllToChar( aErro[1] ) + ']' 
+                                    ::cErro += "Id do campo de origem: " 		+ ' [' + AllToChar( aErro[2] ) + ']' 
+                                    ::cErro += "Id do formulário de erro: " 	+ ' [' + AllToChar( aErro[3] ) + ']' 
+                                    ::cErro += "Id do campo de erro: " 			+ ' [' + AllToChar( aErro[4] ) + ']' 
+                                    ::cErro += "Id do erro: " 					+ ' [' + AllToChar( aErro[5] ) + ']' 
+                                    ::cErro += "Mensagem do erro: " 			+ ' [' + AllToChar( aErro[6] ) + ']' 
+                                    ::cErro += "Mensagem da solução: " 			+ ' [' + AllToChar( aErro[7] ) + ']' 
+                                    ::cErro += "Valor atribuído: " 				+ ' [' + AllToChar( aErro[8] ) + ']' 
+                                    ::cErro += "Valor anterior: " 				+ ' [' + AllToChar( aErro[9] ) + ']' 
+                                    Exit
+                                EndIf
+                            EndIf
+                        Next
+                    EndIf
+                Next
+            EndIf
+		endIf
+		If !lRet
+			Exit
+		EndIf
+	Next nI
+Return lRet

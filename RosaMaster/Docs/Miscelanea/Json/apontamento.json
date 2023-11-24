@@ -1,0 +1,15 @@
+{
+    "ACABEC":{
+        "UJ0_OBSERV":"INCLUSAO VIA EXECAUTO",
+        "UJ0_DTFALE":"25/07/2023",
+        "UJ0_CONTRA":"020896", 
+        "UJ0_CODBEN":"006",
+        "UJ0_FILSER":"010112"
+    },
+    "AITENS":[{
+        "UJ2_ITEM":"001",
+        "UJ2_PRODUT":"000599",
+        "UJ2_PERDES":100	           
+    }],
+    "ROTINA":"MVC"
+}

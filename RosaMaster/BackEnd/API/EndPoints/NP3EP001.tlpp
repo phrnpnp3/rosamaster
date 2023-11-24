@@ -37,8 +37,11 @@ CLASS NP3EP001
     PRIVATE DATA cCodigo as Character
     PRIVATE DATA cLoja as Character
     PRIVATE DATA lExist as Logical
+    PRIVATE DATA lValid as Logical
     PUBLIC  METHOD New(oJson,aAux,cRotina) CONSTRUCTOR
     PRIVATE METHOD IsExist(cCGC)
+    PRIVATE METHOD ValField(aDados)
+    PRIVATE METHOD TypeField(cField,cValue)
     PUBLIC  METHOD Create()
     PRIVATE METHOD Mvc()
     PRIVATE METHOD ExcAuto()
@@ -46,7 +49,6 @@ CLASS NP3EP001
     PUBLIC METHOD GetMsg()
     PUBLIC METHOD GetCodigo()
     PUBLIC METHOD GetLoja()
-    PRIVATE METHOD TypeField(cField,cValue)
 ENDCLASS
 
 // Construtor
@@ -72,7 +74,7 @@ METHOD New(oJson,aAux,cRotina) CLASS NP3EP001
             Else
                 aAdd(::aDados, {aAux[i], ::TypeField(aAux[i],oJson:GetJsonText(aAux[i])), Nil})
             EndIf
-        Next     
+        Next 
         // Ordena o array
         If Len(::aDados) > 0
             ::aDados := FWVetByDic(::aDados, "SA1")
@@ -93,14 +95,32 @@ METHOD IsExist(cCGC) CLASS NP3EP001
     EndIf
 RETURN lRet
 
+// Valida campos
+METHOD ValField(aDados) CLASS NP3EP001
+    Local lRet := .T.
+    Local i
+    Local aValid := aDados
+    For i := 1 to Len(aValid)
+        SX3->(DbSetOrder(2))//X3_CAMPO
+        If !SX3->(DbSeek(aValid[i][1]))
+            ::cErro := "Campo "+aValid[i][1]+" não encontrado no dicionário de dados."
+            lRet := .f.
+        EndIf
+    Next
+RETURN lRet
+
 // Cria o cliente
 METHOD Create() CLASS NP3EP001
     Local lRet := .f.
-    // Escolha da rotina utilizada
-    If AllTrim(UPPER(::cRotina)) == "MVC"
-        lRet := ::Mvc()
-    Else
-        lRet := ::ExecAuto()
+    // Valida dados
+    ::lValid := ::ValField(::aDados)
+    If ::lValid
+        // Escolha da rotina utilizada
+        If AllTrim(UPPER(::cRotina)) == "MVC"
+            lRet := ::Mvc()
+        Else
+            lRet := ::ExecAuto()
+        EndIf
     EndIf
 RETURN lRet
 
@@ -119,7 +139,21 @@ METHOD Mvc() CLASS NP3EP001
         oSA1Mod:= oModel:getModel("MATA030_SA1")
         // Seta os valores
         For i := 1 to Len(::aDados)
-            oSA1Mod:setValue(::aDados[i][1],::aDados[i][2]) 
+            If !oSA1Mod:setValue(::aDados[i][1],::aDados[i][2]) 
+                //Busca o Erro do Modelo de Dados
+                aErro := oModel:GetErrorMessage()
+                //Monta o Texto que será mostrado na tela
+                ::cErro += "Id do formulário de origem:"  + ' [' + AllToChar(aErro[01]) + ']'
+                ::cErro += "Id do campo de origem: "      + ' [' + AllToChar(aErro[02]) + ']'
+                ::cErro += "Id do formulário de erro: "   + ' [' + AllToChar(aErro[03]) + ']'
+                ::cErro += "Id do campo de erro: "        + ' [' + AllToChar(aErro[04]) + ']'
+                ::cErro += "Id do erro: "                 + ' [' + AllToChar(aErro[05]) + ']'
+                ::cErro += "Mensagem do erro: "           + ' [' + AllToChar(aErro[06]) + ']'
+                ::cErro += "Mensagem da solução: "        + ' [' + AllToChar(aErro[07]) + ']'
+                ::cErro += "Valor atribuído: "            + ' [' + AllToChar(aErro[08]) + ']'
+                ::cErro += "Valor anterior: "             + ' [' + AllToChar(aErro[09]) + ']'
+                ::cErro += ""+CRLF
+            EndIf
         Next
         //Se conseguir validar as informações
         If oModel:VldData()

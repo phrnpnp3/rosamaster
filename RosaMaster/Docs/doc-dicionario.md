@@ -17,6 +17,8 @@ ZZA010-CallBack Umov(E,E,E)
 
 ZZB010-Movimento de tarefas(E,E,E)
 
+ZZC010-Itens Movimento de tarefas(E,E,E)
+
 ## Índices
 ZZ5010 1-ZZ5_FILIAL+ZZ5_CODIGO+ZZ5_GRUPO
 
@@ -39,6 +41,8 @@ ZZA010 2-ZZA_FILIAL+ZZA_IDUMOV
 ZZB010 1-ZZB_FILIAL+ZZB_IDFLUI+ZZB_IDUMOV
 
 ZZB010 2-ZZB_FILIAL+ZZB_IDUMOV+ZZB_IDFLUI
+
+ZZB010 1-ZZC_FILIAL+ZZC_IDFLUI+ZZC_SEQ
 
 ## Campos
 
@@ -1714,6 +1718,156 @@ INFORMAÇÕES
 OPÇÕES
     -Lista: 1=Aberto;2=Iniciado;3=Concluido
     -Ini Padrão: "1"
+    -Ini Browse:
+    -Modo Edição:
+    -Cons Padrão:
+VALIDAÇÕES
+    -Val Usuário:
+    -Val Sistema:
+    -Nivel:
+USO
+    -Obrigatório:
+    -Usado: Sim
+    -Browse:
+]: #
+
+ZZC_IDFLUI
+
+[
+CAMPO
+    -Tipo: 1-Caracter
+    -Tamanho: 10
+    -Decimal: 0
+    -Formato:
+    -Contexto: Real
+    -Propriedade: Alterar
+INFORMAÇÕES
+    -Titulo: Id Fluig
+    -Descição: Id Fluig
+    -Help:
+OPÇÕES
+    -Lista:
+    -Ini Padrão:
+    -Ini Browse:
+    -Modo Edição:
+    -Cons Padrão:
+VALIDAÇÕES
+    -Val Usuário:
+    -Val Sistema:
+    -Nivel:
+USO
+    -Obrigatório:
+    -Usado: Sim
+    -Browse:
+]: #
+
+ZZC_SEQ
+
+[
+CAMPO
+    -Tipo: 1-Caracter
+    -Tamanho: 2
+    -Decimal: 0
+    -Formato:
+    -Contexto: Real
+    -Propriedade: Alterar
+INFORMAÇÕES
+    -Titulo: Sequencia
+    -Descição: Sequencia
+    -Help:
+OPÇÕES
+    -Lista:
+    -Ini Padrão:
+    -Ini Browse:
+    -Modo Edição:
+    -Cons Padrão:
+VALIDAÇÕES
+    -Val Usuário:
+    -Val Sistema:
+    -Nivel:
+USO
+    -Obrigatório:
+    -Usado: Sim
+    -Browse:
+]: #
+
+ZZC_ITEM
+
+[
+CAMPO
+    -Tipo: 1-Caracter
+    -Tamanho: 15
+    -Decimal: 0
+    -Formato: 
+    -Contexto: Real
+    -Propriedade: Alterar
+INFORMAÇÕES
+    -Titulo: Item
+    -Descição: Item
+    -Help:
+OPÇÕES
+    -Lista:
+    -Ini Padrão:
+    -Ini Browse:
+    -Modo Edição:
+    -Cons Padrão:
+VALIDAÇÕES
+    -Val Usuário:
+    -Val Sistema:
+    -Nivel:
+USO
+    -Obrigatório:
+    -Usado: Sim
+    -Browse:
+]: #
+
+ZZC_DESCIT
+
+[
+CAMPO
+    -Tipo: 1-Caracter
+    -Tamanho: 60
+    -Decimal: 0
+    -Formato: 
+    -Contexto: Real
+    -Propriedade: Alterar
+INFORMAÇÕES
+    -Titulo: Desc Item
+    -Descição: Desc Item
+    -Help:
+OPÇÕES
+    -Lista:
+    -Ini Padrão:
+    -Ini Browse:
+    -Modo Edição:
+    -Cons Padrão:
+VALIDAÇÕES
+    -Val Usuário:
+    -Val Sistema:
+    -Nivel:
+USO
+    -Obrigatório:
+    -Usado: Sim
+    -Browse:
+]: #
+
+ZZC_CHECK
+
+[
+CAMPO
+    -Tipo: 1-Caracter
+    -Tamanho: 1
+    -Decimal: 0
+    -Formato: 
+    -Contexto: Real
+    -Propriedade: Alterar
+INFORMAÇÕES
+    -Titulo: Check
+    -Descição: Check
+    -Help:
+OPÇÕES
+    -Lista: 1=Sim;2=Não
+    -Ini Padrão: "2"
     -Ini Browse:
     -Modo Edição:
     -Cons Padrão:
