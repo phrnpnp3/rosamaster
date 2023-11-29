@@ -527,6 +527,36 @@ USO
     -Browse: Sim
 ]: #
 
+ZZ6_IDMOV
+
+[
+CAMPO
+    -Tipo: 1-Caracter
+    -Tamanho: 10
+    -Decimal: 0
+    -Formato:
+    -Contexto: Real
+    -Propriedade: Visualizar
+INFORMAÇÕES
+    -Titulo: ID UMOV
+    -Descição: ID UMOV
+    -Help:
+OPÇÕES
+    -Lista:
+    -Ini Padrão:
+    -Ini Browse:
+    -Modo Edição:
+    -Cons Padrão:
+VALIDAÇÕES
+    -Val Usuário:
+    -Val Sistema:
+    -Nivel:
+USO
+    -Obrigatório:
+    -Usado: Sim
+    -Browse: Sim
+]: #
+
 ZZ7_CODIGO
 
 [
@@ -585,6 +615,36 @@ USO
     -Obrigatório: Sim
     -Usado: Sim
     -Browse: Sim
+]: #
+
+ZZ7_LOGIN
+
+[
+CAMPO
+    -Tipo: 1-Caracter
+    -Tamanho: 15
+    -Decimal: 0
+    -Formato: @N
+    -Contexto: Real
+    -Propriedade: Alterar
+INFORMAÇÕES
+    -Titulo: Login
+    -Descição: Login
+    -Help:
+OPÇÕES
+    -Lista:
+    -Ini Padrão:
+    -Ini Browse:
+    -Modo Edição:
+    -Cons Padrão:
+VALIDAÇÕES
+    -Val Usuário:
+    -Val Sistema:
+    -Nivel:
+USO
+    -Obrigatório: Sim
+    -Usado: Sim
+    -Browse: 
 ]: #
 
 ZZ7_IDMOV
@@ -1990,6 +2050,36 @@ INFORMAÇÕES
 OPÇÕES
     -Lista:
     -Ini Padrão: 
+    -Ini Browse: 
+    -Modo Edição:
+    -Cons Padrão:
+VALIDAÇÕES
+    -Val Usuário:
+    -Val Sistema:
+    -Nivel:
+USO
+    -Obrigatório:
+    -Usado: Sim
+    -Browse:
+]: #
+
+B1_XUMOV
+
+[
+CAMPO
+    -Tipo: 1-Caracter
+    -Tamanho: 1
+    -Decimal: 0
+    -Formato: 
+    -Contexto: Real
+    -Propriedade: Alterar
+INFORMAÇÕES
+    -Titulo: Int Umov
+    -Descição: Integrado com Umov
+    -Help:
+OPÇÕES
+    -Lista: 1=Sim;2=Não
+    -Ini Padrão: "2"
     -Ini Browse: 
     -Modo Edição:
     -Cons Padrão:
