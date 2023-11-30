@@ -1037,6 +1037,36 @@ USO
     -Browse: Sim
 ]: #
 
+ZZ9_TIPO
+
+[
+CAMPO
+    -Tipo: 1-Caracter
+    -Tamanho: 1
+    -Decimal: 0
+    -Formato: 
+    -Contexto: Real
+    -Propriedade: Alterar
+INFORMAÇÕES
+    -Titulo: Tipo Servico
+    -Descição: Tipo Servico
+    -Help:
+OPÇÕES
+    -Lista: 1=Funeral;2=Cortejo;3=Ambos
+    -Ini Padrão:
+    -Ini Browse:
+    -Modo Edição:
+    -Cons Padrão:
+VALIDAÇÕES
+    -Val Usuário:
+    -Val Sistema:
+    -Nivel:
+USO
+    -Obrigatório:
+    -Usado: Sim
+    -Browse: Sim
+]: #
+
 ZZA_IDFLUI
 
 [
@@ -2127,4 +2157,47 @@ Condicao:
 
 ## Parâmetros
 
+P3_INTUMOV
+
+[
+Filial: 
+Tipo: Logico
+Conteudo: .F.
+Descrição: Ingracao com Umov
+]: #
+
+P3_REPROC
+
+[
+Filial: 
+Tipo: Logico
+Conteudo: .F.
+Descrição: Reprocessa todos os Itens
+]: #
+
+P3_APIKEY
+
+[
+Filial: 
+Tipo: Caracter
+Conteudo: 39246e5cb05a1a777d3b8ce1e84911bcb70969
+Descrição: Token de conexao com o Umov
+]: #
+
+P3_APISX5
+
+[
+Filial: 
+Tipo: Caracter
+Conteudo: 1Z
+Descrição: Catalogo de erros do umov
+]: #
+
 ## Tabela Genérica
+
+1Z-Catalogo de erros do umov
+
+[
+Chave: 01
+Descição: TESTE
+]: #
