@@ -9,10 +9,10 @@
 
 //Início da declaração da estrutura do Webservice;
 WSRESTFUL F_FATA340 DESCRIPTION "Save in the knowledge bank"
-	WSMETHOD POST BODY64 	DESCRIPTION "Save document in base64 format in the knowledge bank"		PATH "/f_fata340/from-base64"
-	WSMETHOD POST BODYURL 	DESCRIPTION "Save document from a URL, in the knowledge bank" 			PATH "/f_fata340/from-url"
-	WSMETHOD POST BODYCODE 	DESCRIPTION "Save document from a fluig API, in the knowledge bank" 	PATH "/f_fata340/from-fluig-api"
-	WSMETHOD POST SEARCH 	DESCRIPTION "Search documents from a fluig API, in the knowledge bank" 	PATH "/f_fata340/search"
+	WSMETHOD POST BODY64 	DESCRIPTION "Save document in base64 format in the knowledge bank"		WSSYNTAX "/f_fata340/from-base64" PATH "/from-base64"
+	WSMETHOD POST BODYURL 	DESCRIPTION "Save document from a URL, in the knowledge bank" 			WSSYNTAX "/f_fata340/from-url" PATH "/from-url"
+	WSMETHOD POST BODYCODE 	DESCRIPTION "Save document from a fluig API, in the knowledge bank" 	WSSYNTAX "/f_fata340/from-fluig-api" PATH "/from-fluig-api"
+	WSMETHOD POST SEARCH 	DESCRIPTION "Search documents from a fluig API, in the knowledge bank" 	WSSYNTAX "/f_fata340/search" PATH "/search"
 END WSRESTFUL
 
 WSMETHOD POST BODY64 WSSERVICE F_FATA340
@@ -316,11 +316,11 @@ Return empty(cMsgError)
 Static Function ConFluig(pNumDoc)
 	Local aRet				:= {.F., nil, nil}
 	Local aArea    			:= GetArea()
-	Local cAccessToken    	:= SuperGetMV("VM_FTOKENA",.F.,"") //
-	Local cTokenSecret    	:= SuperGetMV("VM_FTOKENS",.F.,"") //
+	Local cAccessToken    	:= SuperGetMV("P3_FTOKENA",.F.,"") //
+	Local cTokenSecret    	:= SuperGetMV("P3_FTOKENS",.F.,"") //
 	Local cURL            	:= SuperGetMV("MV_JFLGURL",.F.,"")
-	Local cConsumerKey    	:= SuperGetMV("VM_FCKEY",.F.,"")
-	Local cConsumerSecret 	:= SuperGetMV("VM_FCSECRE",.F.,"")
+	Local cConsumerKey    	:= SuperGetMV("P3_FCKEY",.F.,"")
+	Local cConsumerSecret 	:= SuperGetMV("P3_FCSECRE",.F.,"")
 	Local cPath           	:= "/api/public/2.0/documents/getDownloadURL/"
 	Local cx_url	      	:= cURL + cPath + pNumDoc
 	Local oResponse			:= JsonObject():new()

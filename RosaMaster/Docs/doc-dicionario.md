@@ -2211,6 +2211,42 @@ Conteudo: http:rosamaster129518.fluig.cloudtotvs.com.br
 Descrição: Url Fulig
 ]: #
 
+P3_FTOKENA
+
+[
+Filial: 
+Tipo: Caracter
+Conteudo: 4f0a34d3-cbd5-4849-bc14-43b0e73737b2
+Descrição: Access Token Fluig                                
+]: #
+
+P3_FTOKENS
+
+[
+Filial: 
+Tipo: Caracter
+Conteudo: d14a4bbc-f565-4113-baae-c50468400748bc022579-44e7-4794-b00b-eb308845cd60
+Descrição: Token Secret Fluig                            
+]: #
+
+P3_FCKEY  
+
+[
+Filial: 
+Tipo: Caracter
+Conteudo: np3
+Descrição: Consumer Key Fluig                         
+]: #
+
+P3_FCSECRE  
+
+[
+Filial: 
+Tipo: Caracter
+Conteudo: np3
+Descrição: Consumer Secret Fluig                                                 
+]: #
+
 ## Tabela Genérica
 
 1Z-Catalogo de erros do umov
