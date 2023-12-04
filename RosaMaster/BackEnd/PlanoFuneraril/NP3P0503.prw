@@ -56,7 +56,7 @@ Static function ModelDef()
     Local oModel  := nil
     Local oZZ6 :=  FWFormStruct(1,'ZZ6')
     //instanciando o modelo de dados
-    oModel := MPFormModel():New('MDL1ZZ6',/*bPre*/,/*bPos*/{|oModel| P3P05032(oModel) },/*bCommit*/,/*bCancel*/)
+    oModel := MPFormModel():New('MDL1ZZ6',/*bPre*/,/*bPos*/{|oModel| P3P05032(oModel) },/*bCommit*/{|oModel| P3P05033(oModel) },/*bCancel*/)
     //formulario para o modelo de dados
     oModel:AddFields('ZZ6MASTER',,oZZ6)
     //Função para validar antes de abrir a tela
@@ -119,8 +119,67 @@ Static Function P3P05032(oModel)
     EndIf
 Return lOk
 
+// Depois do commit
+Static Function P3P05033(oModel)
+    Local lRet := .T.
+    FWFormCommit(oModel)
+    // Integração com umov
+    U_P3P0503A(oModel)
+Return lRet
+
 /*-------------------------------------------------------Funções-------------------------------------------------------*/
 
+// Integração Umov
+User Function P3P0503A(oModel)
+    Local lOk   := .f.
+    Local oZZ6  := oModel:GetModel('ZZ6MASTER')
+    Local oUMOV := NP3UMOV():New()
+    Local aStandard     := {}
+    Local aCustom       := {}
+    Local cTxt := ""
+    Local cMsg := ""
+    If Empty(oZZ6:GetValue("ZZ6_IDMOV")) .and. oZZ6:GetValue("ZZ6_EXESER") == "S"
+        // Alimenta as informações
+        aAdd(aStandard,{; 
+            {"description",AllTrim(oZZ6:GetValue("ZZ6_DESFIL"))},;
+            {"country",""},;
+            {"city",""},;
+            {"street",""},;
+            {"alternativeIdentifier","FIL"+AllTrim(oZZ6:GetValue("ZZ6_FILSER"))},;
+            {"active","true"};            
+        })
+        aAdd(aCustom,{})
+        // Se for exclução
+        If oModel:GetOperation() == MODEL_OPERATION_DELETE
+            // Se estiver integrado com o umov
+            IF !Empty(oZZ6:GetValue("ZZ6_IDMOV"))
+                // Executa integração de cancelamento
+                lOk := oUMOV:ServiceLocal(aStandard,aCustom,"FIL"+oZZ6:GetValue("ZZ6_FILSER"),,.t.)
+                cTxt := "Excluído com sucesso";cMsg := "Erro ao tentar excluir no umov:"
+            EndIf
+        Else
+            // Se estiver integrado com o umov
+            IF !Empty(oZZ6:GetValue("ZZ6_IDMOV"))
+                // Executa integração de alteração
+                lOk := oUMOV:ServiceLocal(aStandard,aCustom,"FIL"+oZZ6:GetValue("ZZ6_FILSER"))
+                cTxt := "Alterado com sucesso";cMsg := "Erro ao tentar alterar no umov:"
+            Else
+                // Executa integração de inclusão
+                lOk := oUMOV:ServiceLocal(aStandard,aCustom)
+                cTxt := "Incuído com sucesso";cMsg := "Erro ao tentar incluir no umov:"
+                If RecLock('ZZ6',.f.)
+                    ZZ6->ZZ6_IDMOV := oUMOV:GetIdUmov()
+                    ZZ6->(MsUnlock())
+                EndIf
+            EndIf
+            If lOk
+                MsgInfo(cTxt,"Integração UMOV")
+            Else
+                MsgAlert(cMsg+CRLF+oUMOV:GetError(),"Integração UMOV")
+            EndIf
+        EndIf
+    EndIf
+Return 
 
 // Legandas
 User Function P3P0503B()

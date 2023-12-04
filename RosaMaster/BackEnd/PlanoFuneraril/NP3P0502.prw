@@ -118,6 +118,33 @@ Static Function P3P05022(oModel)
         EndIf
         (cAliasZZ7)->(DbCloseArea())
     EndIf
+    If oModel:GetOperation() == MODEL_OPERATION_INSERT .or. oModel:GetOperation() == MODEL_OPERATION_UPDATE
+        If AT(" ",AllTrim(FwFldGet("ZZ7_LOGIN"))) == 0
+            If Select(cAliasZZ7) <> 0
+                (cAliasZZ7)->(DbCloseArea())
+            EndIf
+            
+            BeginSql alias cAliasZZ7
+                Select COUNT(*) AS QTD
+                from %Table:ZZ7% ZZ7
+                Where ZZ7_FILIAL = %Exp:xFilial("ZZ7")%
+                    and ZZ7_CODIGO <> %Exp:FwFldGet("ZZ7_CODIGO")%
+                    and ZZ7_LOGIN = %Exp:FwFldGet("ZZ7_LOGIN")%
+                    and ZZ7.%notDel%
+            EndSql
+            
+            If (cAliasZZ7)->QTD > 0
+                Help(nil,nil,'INCLUIR',nil,'Login já existe - Inclusão não permitida',1,0,nil,nil,nil,nil,nil,;
+                    {'Não é possível incluir essa login pois o mesmo já existe!'})
+                lOk := .f.
+            EndIf
+            (cAliasZZ7)->(DbCloseArea())
+        Else
+            Help(nil,nil,'INCLUIR',nil,'Campo Login - Inclusão não permitida',1,0,nil,nil,nil,nil,nil,;
+                    {'Não pode haver espaço no login!'})
+                lOk := .f.
+        EndIf
+    EndIf
 Return lOk
 
 // Depois do commit
@@ -139,43 +166,45 @@ User Function P3P0502A(oModel)
     Local aCustom       := {}
     Local cTxt := ""
     Local cMsg := ""
-    // Alimenta as informações
-    aAdd(aStandard,{; 
-        {"active","true"},;
-        {"agentType",{{{"alternativeIdentifier","1"}}}},;
-        {"login",oZZ7:GetValue("ZZ7_DESCR")},;
-        {"name",oZZ7:GetValue("ZZ7_DESCR")},;
-        {"password","12345"},;
-        {"alternativeIdentifier",oZZ7:GetValue("ZZ7_CODIGO")};
-    })
-    aAdd(aCustom,{})
-    // Se for exclução
-    If oModel:GetOperation() == MODEL_OPERATION_DELETE
-        // Se estiver integrado com o umov
-        IF !Empty(oZZ7:GetValue("ZZ7_IDMOV"))
-            // Executa integração de cancelamento
-            lOk := oUMOV:Agent(aStandard,aCustom,oZZ7:GetValue("ZZ7_CODIGO"),,.t.)
-            cTxt := "Excluído com sucesso";cMsg := "Erro ao tentar excluir no umov:"
-        EndIf
-    Else
-        // Se estiver integrado com o umov
-        IF !Empty(oZZ7:GetValue("ZZ7_IDMOV"))
-            // Executa integração de alteração
-            lOk := oUMOV:Agent(aStandard,aCustom,oZZ7:GetValue("ZZ7_CODIGO"))
-            cTxt := "Alterado com sucesso";cMsg := "Erro ao tentar alterar no umov:"
-        Else
-            // Executa integração de inclusão
-            lOk := oUMOV:Agent(aStandard,aCustom)
-            cTxt := "Incuído com sucesso";cMsg := "Erro ao tentar incluir no umov:"
-            If RecLock('ZZ7',.f.)
-                ZZ7_IDMOV := oUMOV:GetIdUmov()
-                ZZ7->(MsUnlock())
+    If Empty(oZZ7:GetValue("ZZ7_IDMOV"))
+        // Alimenta as informações
+        aAdd(aStandard,{; 
+            {"active","true"},;
+            {"agentType",{{{"alternativeIdentifier","1"}}}},;
+            {"login",AllTrim(oZZ7:GetValue("ZZ7_LOGIN"))},;
+            {"name",AllTrim(oZZ7:GetValue("ZZ7_DESCR"))},;
+            {"password","12345"},;
+            {"alternativeIdentifier",AllTrim(oZZ7:GetValue("ZZ7_CODIGO"))};
+        })
+        aAdd(aCustom,{})
+        // Se for exclução
+        If oModel:GetOperation() == MODEL_OPERATION_DELETE
+            // Se estiver integrado com o umov
+            IF !Empty(oZZ7:GetValue("ZZ7_IDMOV"))
+                // Executa integração de cancelamento
+                lOk := oUMOV:Agent(aStandard,aCustom,oZZ7:GetValue("ZZ7_CODIGO"),,.t.)
+                cTxt := "Excluído com sucesso";cMsg := "Erro ao tentar excluir no umov:"
             EndIf
-        EndIf
-        If lOk
-            MsgInfo(cTxt,"Integração UMOV")
         Else
-            MsgAlert(cMsg+CRLF+oUMOV:cTxtErro,"Integração UMOV")
+            // Se estiver integrado com o umov
+            IF !Empty(oZZ7:GetValue("ZZ7_IDMOV"))
+                // Executa integração de alteração
+                lOk := oUMOV:Agent(aStandard,aCustom,oZZ7:GetValue("ZZ7_CODIGO"))
+                cTxt := "Alterado com sucesso";cMsg := "Erro ao tentar alterar no umov:"
+            Else
+                // Executa integração de inclusão
+                lOk := oUMOV:Agent(aStandard,aCustom)
+                cTxt := "Incuído com sucesso";cMsg := "Erro ao tentar incluir no umov:"
+                If RecLock('ZZ7',.f.)
+                    ZZ7_IDMOV := oUMOV:GetIdUmov()
+                    ZZ7->(MsUnlock())
+                EndIf
+            EndIf
+            If lOk
+                MsgInfo(cTxt,"Integração UMOV")
+            Else
+                MsgAlert(cMsg+CRLF+oUMOV:GetError(),"Integração UMOV")
+            EndIf
         EndIf
     EndIf
 Return 

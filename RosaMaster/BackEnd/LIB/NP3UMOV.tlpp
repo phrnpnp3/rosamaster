@@ -61,6 +61,7 @@ CLASS NP3UMOV FROM NP3LIB
     PRIVATE METHOD RetUmovArq()
     PRIVATE METHOD FtpUmovDw()
     PUBLIC METHOD GetIdUmov()
+    PUBLIC METHOD GetError()
 ENDCLASS 
 
 // Contrutor
@@ -82,7 +83,7 @@ METHOD New() CLASS NP3UMOV
     ::cContType     := "Content-Type: application/x-www-form-urlencoded"
     ::cUrl          := 'https://api.umov.me/CenterWeb/api/'
     ::cApi          := ""
-    ::cKey          := "39246e5cb05a1a777d3b8ce1e84911bcb70969"//GetMV("P3_APIKEY")
+    ::cKey          := GetMV("P3_APIKEY")
     ::cSX5          := GetMV("P3_APISX5")//"1Z"
     ::cPATH         := AllTrim(GetMV("P3_PATUMOV"))//"\uMov"
     ::cDIR          := ::cPATH+AllTrim(GetMV("P3_DIRUMOV"))//"\importacao\"
@@ -150,8 +151,14 @@ METHOD ConectUmov(cMsgErr) CLASS NP3UMOV
 		Else
             oBjType := ::oXML
             If AttIsMemberOf(oBjType:_RESULT, "_RESOURCEID")
-                // ::cIdUmov := ::oXML:_RESULT:_ENTRIES:_ENTRY:_ALTERNATIVEIDENTIFIER:TEXT
                 ::cIdUmov := ::oXML:_RESULT:_RESOURCEID:TEXT
+            EndIf
+            If AttIsMemberOf(oBjType:_RESULT, "_ENTRIES")
+                If AttIsMemberOf(oBjType:_RESULT:_ENTRIES, "_ENTRY")
+                    If AttIsMemberOf(oBjType:_RESULT:_ENTRIES:_ENTRY, "_ID")
+                        ::cIdUmov := ::oXML:_RESULT:_ENTRIES:_ENTRY:_ID:TEXT
+                    EndIf
+                EndIf
             EndIf
 		EndIf
 		If !Empty(::cTxtErro)
@@ -430,3 +437,7 @@ RETURN {::aDados,cArqImp}
 // Retorna o Id do umov 
 METHOD GetIdUmov() CLASS NP3UMOV
 RETURN ::cIdUmov
+
+// Retorna o Erro
+METHOD GetError() CLASS NP3UMOV
+RETURN ::cTxtErro

@@ -1,0 +1,415 @@
+#include "parmtype.ch"
+#INCLUDE "FWADAPTEREAI.CH"
+#Include "TBICODE.CH"
+#include 'fileio.ch'
+#Include "Tlpp-core.th"
+/*
+#---------------------------------------------------------------#
+| Programa:| NP3F0506                          Data:27/11/2023  |
+|---------------------------------------------------------------|
+| Autor:   | NP3 Tecnologia                                     |
+|---------------------------------------------------------------|
+| Objetivo:|Integração de cadastos com o Umov                   |
+|---------------------------------------------------------------|
+|                        ALTERAÇÕES                             |
+|---------------------------------------------------------------|
+|     Analista      |   Data     |  Motivo                      |
+|---------------------------------------------------------------|
+|                   |            |                              |
+|                   |            |                              |
+#---------------------------------------------------------------#
+LINK TDN: ** NÃO TEM **
+*/
+CLASS NP3F0506
+    PRIVATE DATA cTxtErro as Character
+    PRIVATE DATA cAliasQRY as Character
+    PRIVATE DATA cQuery as Character
+    PUBLIC METHOD New() CONSTRUCTOR
+    PUBLIC METHOD Itens(aItens)
+    PUBLIC METHOD Agents(aVeiculos)
+    PUBLIC METHOD Locais(aLocais)
+    PUBLIC METHOD Query(cTipo)
+    PUBLIC METHOD GetError()
+ENDCLASS
+
+// Construtor
+METHOD New() CLASS NP3F0506
+    ::cTxtErro := ""
+    ::cAliasQRY := GetNextAlias()
+RETURN
+
+// Envia item para umov
+METHOD Itens(cItem) CLASS NP3F0506
+    Local lRet      := .t.
+    Local oUMOV     := NP3UMOV():New()
+    Local cTipoServ := ""
+    Local aStandard := {}
+    Local aCustom   := {}
+    Local cAliasQRY := ::cAliasQRY
+    DEFAULT cItem := ""
+    // Monta o filtro
+    If Empty(cItem)
+        ::cQuery    := "%B1_COD <> ''%"
+    Else
+        ::cQuery    := "%B1_COD = '"+cItem+"'%"
+    EndIf
+    // Executa a query
+    ::Query("SB1")
+    // Preenche as informações para o umov
+    While (cAliasQRY)->(!Eof())
+        // Reinicia as variaveis
+        cTipoServ := ""
+        aStandard := {}
+        aCustom   := {}
+        ::cTxtErro := ""
+        SB1->(DbSetOrder(1))
+        If SB1->(DbSeek(xFilial('SB1')+Padr((cAliasQRY)->B1_COD,TamSx3("B1_COD")[1])))
+            IF /*SB1->B1_XUMOV <> "1" .and.*/ !Empty(SB1->B1_XTPSE) .and. SB1->B1_MSBLQL <> "1"
+                aStandard := {}
+                aCustom:= {}
+                // Tipo de serviço
+                Do CASE 
+                    case SB1->B1_XTPSE == "1"
+                        cTipoServ := "funeral"
+                    case SB1->B1_XTPSE == "2"
+                        cTipoServ := "cortejo"
+                    case SB1->B1_XTPSE == "3"
+                        cTipoServ := "ambos"
+                    OTHERWISE
+                        cTipoServ := ""
+                End
+                // Pega as informações do produto
+                aAdd(aStandard,{;
+                    {"subGroup",{{{"alternativeIdentifier",Iif(SB1->B1_TIPO=="SV","0002","0001")}}}},;// 0001=Produto 0002=Serviços
+                    {"description",SB1->B1_DESC},;
+                    {"active","true"},;
+                    {"alternativeIdentifier",SB1->B1_COD};
+                })
+                aAdd(aCustom,{;
+                    {"tpprod",cTipoServ};
+                })
+                // Envia para para umov
+                If oUMOV:Items(aStandard,aCustom)
+                    If RecLock('SB1',.f.)
+                        SB1->B1_XUMOV := "1"
+                        SB1->(MsUnlock())
+                    EndIf
+                Else 
+                    ::cTxtErro := oUMOV:GetError()
+                    lRet := .F.
+                    exit
+                EndIf
+            EndIf
+        EndIf
+        (cAliasQRY)->(DbSkip())
+    EndDo
+    // Finaliza o alias
+    If Select(cAliasQRY) <> 0
+        (cAliasQRY)->(DbCloseArea())
+    EndIf
+Return lRet
+
+// Envia agent para umov
+METHOD Agents(cVeiculo) CLASS NP3F0506
+    Local lRet      := .t.
+    Local oUMOV     := NP3UMOV():New()
+    Local aStandard := {}
+    Local aCustom   := {}
+    Local cAliasQRY := ::cAliasQRY
+    Default cVeiculo := ""
+    // Monta o filtro
+    If Empty(cVeiculo)
+        ::cQuery    := "%ZZ7_CODIGO <> ''%"
+    Else
+        ::cQuery    := "%ZZ7_CODIGO = '"+cVeiculo+"'%"
+    EndIf
+    // Executa a query
+    ::Query("ZZ7")
+    // Preenche as informações para o umov
+    While (cAliasQRY)->(!Eof())
+        // Reinicia as variaveis
+        aStandard := {}
+        aCustom   := {}
+        ZZ7->(DbSetOrder(1))
+        If ZZ7->(DbSeek(xFilial('ZZ7')+Padr((cAliasQRY)->ZZ7_CODIGO,TamSx3("ZZ7_CODIGO")[1])))
+            IF Empty(ZZ7->ZZ7_IDMOV)
+                aStandard := {}
+                aCustom:= {}
+                aAdd(aStandard,{; 
+                    {"active","true"},;
+                    {"agentType",{{{"alternativeIdentifier","1"}}}},;
+                    {"login",AllTrim(ZZ7->ZZ7_LOGIN)},;
+                    {"name",AllTrim(ZZ7->ZZ7_DESCR)},;
+                    {"password","12345"},;
+                    {"alternativeIdentifier",AllTrim(ZZ7->ZZ7_CODIGO)};
+                })
+                aAdd(aCustom,{})
+                If  oUMOV:Agent(aStandard,aCustom)
+                    If RecLock('ZZ7',.f.)
+                        ZZ7_IDMOV := oUMOV:GetIdUmov()
+                        ZZ7->(MsUnlock())
+                    EndIf
+                Else 
+                    ::cTxtErro := oUMOV:GetError()
+                    lRet := .F.
+                    exit
+                EndIf
+            EndIf
+        EndIf
+        (cAliasQRY)->(DbSkip())
+    EndDo
+    // Finaliza o alias
+    If Select(cAliasQRY) <> 0
+        (cAliasQRY)->(DbCloseArea())
+    EndIf
+Return lRet
+
+// Envia agent para umov
+METHOD Locais(cLocal) CLASS NP3F0506
+    Local lRet      := .t.
+    Local oUMOV     := NP3UMOV():New()
+    Local aStandard := {}
+    Local aCustom   := {}
+    Local cDesc     := ""
+    Local cAliasQRY := ::cAliasQRY
+    Default cLocal  := ""
+    If SubStr(cLocal,1,3) == "FIL" 
+        // FILIAL
+        // Monta o filtro
+        If Empty(cLocal)
+            ::cQuery    := "%ZZ6_FILSER <> ''%"
+        Else
+            ::cQuery    := "%ZZ6_FILSER = '"+SubStr(cLocal,4)+"'%"
+        EndIf
+        // Executa a query
+        ::Query("ZZ6")
+        // Preenche as informações para o umov
+        While (cAliasQRY)->(!Eof())
+            // Reinicia as variaveis
+            aStandard := {}
+            aCustom   := {}
+            cDesc     := ""
+            ZZ6->(DbSetOrder(1))
+            If ZZ6->(DbSeek(xFilial('ZZ6')+Padr((cAliasQRY)->ZZ6_FILSER,TamSx3("ZZ6_FILSER")[1])))
+                IF /*Empty(ZZ6->ZZ6_IDMOV) .and.*/ ZZ6->ZZ6_EXESER == "S"
+                    aStandard := {}
+                    aCustom:= {}
+                    cDesc := POSICIONE("SM0",1,cEmpAnt+ZZ6->ZZ6_FILSER,"M0_FILIAL")
+                    aAdd(aStandard,{; 
+                        {"description",AllTrim(cDesc)},;
+                        {"country",""},;
+                        {"city",""},;
+                        {"street",""},;
+                        {"alternativeIdentifier","FIL"+AllTrim(ZZ6->ZZ6_FILSER)},;
+                        {"active","true"};            
+                    })
+                    aAdd(aCustom,{})
+                    If  oUMOV:ServiceLocal(aStandard,aCustom)
+                        If RecLock('ZZ6',.f.)
+                            ZZ6->ZZ6_IDMOV := oUMOV:GetIdUmov()
+                            ZZ6->(MsUnlock())
+                        EndIf
+                    Else 
+                        ::cTxtErro := oUMOV:GetError()
+                        lRet := .F.
+                        exit
+                    EndIf
+                EndIf
+            EndIf
+            (cAliasQRY)->(DbSkip())
+        EndDo
+        // Finaliza o alias
+        If Select(cAliasQRY) <> 0
+            (cAliasQRY)->(DbCloseArea())
+        EndIf
+    EndIf
+    If SubStr(cLocal,1,3) == "CLI"
+        // CLIENTE
+         // Monta o filtro
+        If Empty(cLocal)
+            ::cQuery    := "%A1_COD <> '' and A1_LOJA <> ''%"
+        Else
+            ::cQuery    := "%A1_COD = '"+SubStr(cLocal,4,6)+"' and A1_LOJA='"+SubStr(cLocal,10)+"'%"
+        EndIf
+        // Executa a query
+        ::Query("SA1")
+        // Preenche as informações para o umov
+        While (cAliasQRY)->(!Eof())
+            // Reinicia as variaveis
+            aStandard := {}
+            aCustom   := {}
+            cDesc     := ""
+            SA1->(DbSetOrder(1))
+            If SA1->(DbSeek(xFilial('SA1')+Padr((cAliasQRY)->A1_COD,TamSx3("A1_COD")[1])+Padr((cAliasQRY)->A1_LOJA,TamSx3("A1_LOJA")[1])))
+                IF /*Empty(SA1->B1_XUMOV) .and.*/ SA1->A1_MSBLQL <> "1"
+                    aStandard := {}
+                    aCustom:= {}
+                    aAdd(aStandard,{; 
+                        {"description",AllTrim(SA1->A1_NOME)},;
+                        {"country",""},;
+                        {"city",""},;
+                        {"street",""},;
+                        {"alternativeIdentifier","CLI"+AllTrim(SA1->A1_COD)+AllTrim(SA1->A1_LOJA)},;
+                        {"active","true"};            
+                    })
+                    aAdd(aCustom,{})
+                    If  oUMOV:ServiceLocal(aStandard,aCustom)
+                        // If RecLock('SA1',.f.)
+                        //     SA1->A1_IDMOV := oUMOV:GetIdUmov()
+                        //     SA1->(MsUnlock())
+                        // EndIf
+                    Else 
+                        ::cTxtErro := oUMOV:GetError()
+                        lRet := .F.
+                        exit
+                    EndIf
+                EndIf
+            EndIf
+            (cAliasQRY)->(DbSkip())
+        EndDo
+        // Finaliza o alias
+        If Select(cAliasQRY) <> 0
+            (cAliasQRY)->(DbCloseArea())
+        EndIf
+    EndIf
+    If SubStr(cLocal,1,3) == "REM"
+        // REMOÇÃO
+         // Monta o filtro
+        If Empty(cLocal)
+            ::cQuery    := "%UJC_CODIGO <> ''%"
+        Else
+            ::cQuery    := "%UJC_CODIGO = '"+SubStr(cLocal,4)+"'%"
+        EndIf
+        // Executa a query
+        ::Query("UJC")
+        // Preenche as informações para o umov
+        While (cAliasQRY)->(!Eof())
+            // Reinicia as variaveis
+            aStandard := {}
+            aCustom   := {}
+            cDesc     := ""
+            UJC->(DbSetOrder(1))
+            If UJC->(DbSeek(xFilial('UJC')+Padr((cAliasQRY)->UJC_CODIGO,TamSx3("UJC_CODIGO")[1])))
+                // IF Empty(UJC->B1_XUMOV) 
+                    aStandard := {}
+                    aCustom:= {}
+                    aAdd(aStandard,{; 
+                        {"description",AllTrim(UJC->UJC_DESCRI)},;
+                        {"country",""},;
+                        {"city",""},;
+                        {"street",""},;
+                        {"alternativeIdentifier","REM"+AllTrim(UJC->UJC_CODIGO)},;
+                        {"active","true"};            
+                    })
+                    aAdd(aCustom,{})
+                    If  oUMOV:ServiceLocal(aStandard,aCustom)
+                        // If RecLock('UJC',.f.)
+                        //     UJC->UJC_IDMOV := oUMOV:GetIdUmov()
+                        //     UJC->(MsUnlock())
+                        // EndIf
+                    Else 
+                        ::cTxtErro := oUMOV:GetError()
+                        lRet := .F.
+                        exit
+                    EndIf
+                // EndIf
+            EndIf
+            (cAliasQRY)->(DbSkip())
+        EndDo
+        // Finaliza o alias
+        If Select(cAliasQRY) <> 0
+            (cAliasQRY)->(DbCloseArea())
+        EndIf
+    EndIf
+Return lRet
+
+// Querys
+METHOD Query(cTipo) CLASS NP3F0506
+    Local cAliasQRY := ::cAliasQRY
+    Local cQuery    := ::cQuery
+    Local lRet      := .f.
+    // Itens
+    If cTipo == "SB1"
+        If Select(cAliasQRY) <> 0
+            (cAliasQRY)->(DbCloseArea())
+        EndIf        
+        BeginSql alias cAliasQRY
+            Select * 
+            from %Table:SB1% SB1
+            Where B1_FILIAL = %Exp:xFilial("SB1")%
+                and %Exp:cQuery%
+                and SB1.%notDel%
+        EndSql        
+        If (cAliasQRY)->(!EOF())
+            lRet := .t.
+        EndIf
+    EndIf
+    // Agents
+    If cTipo == "ZZ7"
+        If Select(cAliasQRY) <> 0
+            (cAliasQRY)->(DbCloseArea())
+        EndIf        
+        BeginSql alias cAliasQRY
+            Select * 
+            from %Table:ZZ7% ZZ7
+            Where ZZ7_FILIAL = %Exp:xFilial("ZZ7")%
+                and %Exp:cQuery%
+                and ZZ7.%notDel%
+        EndSql        
+        If (cAliasQRY)->(!EOF())
+            lRet := .t.
+        EndIf
+    EndIf
+    // Local
+    If cTipo == "ZZ6"
+        If Select(cAliasQRY) <> 0
+            (cAliasQRY)->(DbCloseArea())
+        EndIf        
+        BeginSql alias cAliasQRY
+            Select * 
+            from %Table:ZZ6% ZZ6
+            Where ZZ6_FILIAL = %Exp:xFilial("ZZ6")%
+                and %Exp:cQuery%
+                and ZZ6.%notDel%
+        EndSql        
+        If (cAliasQRY)->(!EOF())
+            lRet := .t.
+        EndIf
+    EndIf
+    // Local
+    If cTipo == "SA1"
+        If Select(cAliasQRY) <> 0
+            (cAliasQRY)->(DbCloseArea())
+        EndIf        
+        BeginSql alias cAliasQRY
+            Select * 
+            from %Table:SA1% SA1
+            Where A1_FILIAL = %Exp:xFilial("SA1")%
+                and %Exp:cQuery%
+                and SA1.%notDel%
+        EndSql        
+        If (cAliasQRY)->(!EOF())
+            lRet := .t.
+        EndIf
+    EndIf
+    // Local
+    If cTipo == "UJC"
+        If Select(cAliasQRY) <> 0
+            (cAliasQRY)->(DbCloseArea())
+        EndIf        
+        BeginSql alias cAliasQRY
+            Select * 
+            from %Table:UJC% UJC
+            Where UJC_FILIAL = %Exp:xFilial("UJC")%
+                and %Exp:cQuery%
+                and UJC.%notDel%
+        EndSql        
+        If (cAliasQRY)->(!EOF())
+            lRet := .t.
+        EndIf
+    EndIf
+RETURN lRet
+
+// Retorna o erro
+METHOD GetError() CLASS NP3F0506
+RETURN ::cTxtErro
