@@ -20,9 +20,11 @@ WSRESTFUL NP3REST DESCRIPTION "Serviço REST para requisições ao ERP Protheus"
 	
 	WSDATA cWsFuncao AS CHARACTER OPTIONAL
 
-	WSMETHOD POST   LISTA     DESCRIPTION "Retorna lista de registros da empresa - generico. Será preciso informar no BODY uma lista de registros com a informação da empresa, filial, select, campos de retorno e delimitador."  WSSYNTAX "NP3REST/LISTA" PATH "/LISTA"
-	WSMETHOD POST   CLIENTE   DESCRIPTION "Cadastro de Cliente MVC/EXECAUTO. Será preciso informar no BODY as informações do cliente e metodo utilizador."  WSSYNTAX "NP3REST/CLIENTE" PATH "/CLIENTE"
-	WSMETHOD POST   APONTAMENTO   DESCRIPTION "Cadastro de Apontamento MVC/EXECAUTO. Será preciso informar no BODY as informações do apontamento e metodo utilizador."  WSSYNTAX "NP3REST/APONTAMENTO" PATH "/APONTAMENTO"
+	WSMETHOD POST   LISTA     	DESCRIPTION "Retorna lista de registros da empresa - generico. Será preciso informar no BODY uma lista de registros com a informação da empresa, filial, select, campos de retorno e delimitador."  WSSYNTAX "NP3REST/LISTA" PATH "/LISTA"
+	WSMETHOD POST 	CALLBACK 	DESCRIPTION "Executa callback do UMOV"  WSSYNTAX "NP3REST/CALLBACK" PATH "/CALLBACK"
+	WSMETHOD POST   CLIENTE   	DESCRIPTION "Cadastro de Cliente MVC/EXECAUTO. Será preciso informar no BODY as informações do cliente e metodo utilizador."  WSSYNTAX "NP3REST/CLIENTE" PATH "/CLIENTE"
+	WSMETHOD POST   APONTAMENTO DESCRIPTION "Cadastro de Apontamento MVC/EXECAUTO. Será preciso informar no BODY as informações do apontamento e metodo utilizador."  WSSYNTAX "NP3REST/APONTAMENTO" PATH "/APONTAMENTO"
+	WSMETHOD POST   TAREFAS 	DESCRIPTION "Movimento de tarefas Fluig x Protheus x Umov."  WSSYNTAX "NP3REST/TAREFAS" PATH "/TAREFAS"
 
 END WSRESTFUL
 
@@ -126,6 +128,48 @@ WSMETHOD POST LISTA WSSERVICE NP3REST
 
 Return lRet
 
+//Methodo post para execução de querys genericas
+WSMETHOD POST CALLBACK WSSERVICE NP3REST
+	Local lRet := .t.
+	Local cJson     := Self:GetContent()
+	Local oJson		:= JsonObject():New()
+	Local oRet      := JsonObject():New()
+	Local cObjJson := ''
+	Private cError := ""
+	Private oLastError := ErrorBlock( { |e| cError := e:ErrorStack, Break(e) } )
+	::SetContentType("application/json")
+	BEGIN SEQUENCE
+		oJson := JsonObject():New()
+		oRet := oJson:FromJson(cJson)
+		cObjJson := oJson:GetNames()
+		IF ValType(oJson:GetNames()) <> "A"
+			cError := 'Não foi nada recebido"
+			BREAK
+		Else
+			DbSelectArea("ZZA")
+			RecLock("ZZA",.T.)
+			ZZA->ZZA_FILIAL := xFilial("ZZA")
+			ZZA->ZZA_SEQUEN := GetSXENum("ZZA","ZZA_SEQUEN")
+			ZZA->ZZA_JSONP  := cJson
+			ZZA->ZZA_STATUS := "1"
+			ZZA->(MsUnlock())
+			ZZA->(DbCloseArea())
+			ZZA->(ConfirmSx8())
+			ConOut(cJson)
+		endif
+		FreeObj(oJson)
+		ErrorBlock(oLastError)
+	END SEQUENCE
+	if !empty(cError)
+		conout(cError)
+		self:setStatus(400)
+		SetRestFault(400, EncodeUTF8( cError ), .T.)
+		lRet = .F.
+	Else
+		::SetResponse("sucess")
+	endif
+Return lRet
+
 //Methodo post para Gravação de Cliente
 WSMETHOD POST CLIENTE WSSERVICE NP3REST
 	Local cJson     := Self:GetContent()
@@ -154,7 +198,11 @@ WSMETHOD POST CLIENTE WSSERVICE NP3REST
 		self:setStatus(400)
 		SetRestFault(400,EncodeUTF8(oCliente:GetError()),.T.,400)
 	else
-		::SetResponse('{"CLIENTE":'+oCliente:GetMsg()+'}')
+		If oCliente:GetMsg() <> 'SUCCESSO'
+			::SetResponse('{"CLIENTE":"'+oCliente:GetMsg()+'"}')
+		Else
+			::SetResponse('{"CLIENTE":"'+oCliente:GetMsg()+'","CODIGO":"'+oCliente:GetCodigo()+'","LOJA":"'+oCliente:GetLoja()+'"}')
+		EndIf
 	endif
 Return lRet
 
@@ -165,8 +213,56 @@ WSMETHOD POST APONTAMENTO WSSERVICE NP3REST
 	Local oJson		:= JsonObject():New()
 	Local oRet      := JsonObject():New()
 	Local lRet 		:= .F.
+	Local lPos 		:= .F.
 	Local oApontamento
 	Local cRotina	:= ""
+	Local cContra := ""
+	PRIVATE cError     := ""
+	PRIVATE oLastError := ErrorBlock( { |e| cError := e:ErrorStack, Break(e) } )
+
+	SetFunname("RFUNA002")
+
+	::SetContentType("application/json")
+
+	BEGIN SEQUENCE
+
+		oJson := JsonObject():New()
+		oRet := oJson:FromJson(cJson)
+		aAux := oJson:GetNames()
+		cRotina	:= oJson:GetJsonText("ROTINA")
+		cContra := oJson['ACABEC']:GetJsonText("UJ0_CONTRA")
+		// Posiciona no contrato
+		UF2->(DbSetOrder(1)) //UF2_FILIAL+UF2_CODIGO 
+		if UF2->(MsSeek(xFilial("UF2")+cContra))
+			// Posicionou
+			lPos := .t.
+			// Cria o bojeto e executa a rotina 
+			oApontamento:= NP3EP002():New(oJson,aAux,cRotina)
+			lRet := oApontamento:Create()
+		EndIf
+	END SEQUENCE
+	IF lPos
+		if !empty(oApontamento:GetError())
+			self:setStatus(400)
+			SetRestFault(400,EncodeUTF8(oApontamento:GetError()),.T.,400)
+		else
+			::SetResponse('{"APONTAMENTO":'+oApontamento:GetMsg()+'}')
+		endif
+	Else
+		self:setStatus(400)
+		SetRestFault(400,EncodeUTF8("Contrato não encontrado-"+cContra),.T.,400)
+	endif
+Return lRet
+
+
+//Methodo post para Tarefa
+WSMETHOD POST TAREFAS WSSERVICE NP3REST
+	Local cJson     := Self:GetContent()
+	Local oJson		:= JsonObject():New()
+	Local oRet      := JsonObject():New()
+	Local lRet 		:= .F.
+	Local oTarefas
+	Local cID	:= ""
 	PRIVATE cError     := ""
 	PRIVATE oLastError := ErrorBlock( { |e| cError := e:ErrorStack, Break(e) } )
 
@@ -177,16 +273,16 @@ WSMETHOD POST APONTAMENTO WSSERVICE NP3REST
 		oJson := JsonObject():New()
 		oRet := oJson:FromJson(cJson)
 		aAux := oJson:GetNames()
-		cRotina	:= oJson:GetJsonText("ROTINA")
+		cID	:= oJson:GetJsonText("ZZB_IDFLUI")
 		// Cria o bojeto e executa a rotina 
-		oApontamento:= NP3EP002():New(oJson,aAux,cRotina)
-		lRet := oApontamento:Create()
+		oTarefas:= NP3EP003():New(oJson,aAux,cID)
+		lRet := oTarefas:Create()
 
 	END SEQUENCE
-	if !empty(oApontamento:GetError())
+	if !empty(oTarefas:GetError())
 		self:setStatus(400)
-		SetRestFault(400,EncodeUTF8(oApontamento:GetError()),.T.,400)
+		SetRestFault(400,EncodeUTF8(oTarefas:GetError()),.T.,400)
 	else
-		::SetResponse('{"APONTAMENTO":'+oApontamento:GetMsg()+'}')
+		::SetResponse('{"TAREFAS":"'+oTarefas:GetMsg()+'"}')
 	endif
 Return lRet

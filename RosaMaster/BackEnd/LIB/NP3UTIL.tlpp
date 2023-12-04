@@ -1,0 +1,103 @@
+#Include 'Protheus.ch'
+#Include 'FWMVCDEF.ch'
+#Include 'RestFul.CH'
+#INCLUDE "TOTVS.CH"
+#INCLUDE "TopConn.ch"
+#INCLUDE 'COLORS.CH'
+#INCLUDE 'FONT.CH'
+#INCLUDE 'RWMAKE.CH'
+#INCLUDE "TBICONN.CH"
+#include "parmtype.ch"
+#INCLUDE "FWADAPTEREAI.CH"
+#Include "TBICODE.CH"
+#include 'fileio.ch'
+#include 'tlpp-core.th'
+/*
+#---------------------------------------------------------------#
+| Programa:| NP3EP003                          Data:30/11/2023  |
+|---------------------------------------------------------------|
+| Autor:   | NP3 Tecnologia                                     |
+|---------------------------------------------------------------|
+| Objetivo:| Utilitários NP3                                    |
+|---------------------------------------------------------------|
+|                        ALTERAÇÕES                             |
+|---------------------------------------------------------------|
+|     Analista      |   Data     |  Motivo                      |
+|---------------------------------------------------------------|
+|                   |            |                              |
+|                   |            |                              |
+#---------------------------------------------------------------#
+LINK TDN: ** NÃO TEM **
+*/
+
+User Function CARACESP(cDado)
+	//Variavel Local de Controle
+	Local aCarcEsp := {}
+	Local num
+	//Imputa os Caracteres Especiais no Array de Controle
+	AADD(aCarcEsp,{"!", "Exclamacao"})
+	AADD(aCarcEsp,{"@", "Arroba"})
+	AADD(aCarcEsp,{"#", "Sustenido"})
+	AADD(aCarcEsp,{"$", "Cifrao"})
+	AADD(aCarcEsp,{"%", "Porcentagem"})
+	AADD(aCarcEsp,{"*", "Asterisco"})
+	AADD(aCarcEsp,{"/", "Barra"})
+	AADD(aCarcEsp,{"\", "ContraBarra"})
+	AADD(aCarcEsp,{"&", "Comercial"})
+	AADD(aCarcEsp,{"(", "Parentese"})
+	AADD(aCarcEsp,{")", "Parentese"})
+	AADD(aCarcEsp,{"+", "Mais"})
+	AADD(aCarcEsp,{"¨", "Trema"})
+	AADD(aCarcEsp,{"=", "Igual"})
+	AADD(aCarcEsp,{"~", "Til"})
+	AADD(aCarcEsp,{"^", "Circunflexo"})
+	AADD(aCarcEsp,{"´", "Agudo"})
+	AADD(aCarcEsp,{"`", "Crase"})
+	AADD(aCarcEsp,{"]", "Chave"})
+	AADD(aCarcEsp,{"[", "Chave"})
+	AADD(aCarcEsp,{"{", "Colchete"})
+	AADD(aCarcEsp,{"}", "Colchete"})
+	AADD(aCarcEsp,{";", "Ponto e Virgula"})
+	AADD(aCarcEsp,{":", "Dois Pontos"})
+	AADD(aCarcEsp,{">", "Maior que"})
+	AADD(aCarcEsp,{"<", "Menor que"})
+	AADD(aCarcEsp,{"?", "Interrogacao"})
+	//AADD(aCarcEsp,{"_", "Underline"})
+	//AADD(aCarcEsp,{",", "Virgula"})
+	AADD(aCarcEsp,{"-", "Hifen"})
+	AADD(aCarcEsp,{"°", "Grau"})
+	AADD(aCarcEsp,{"º", "Grau"})
+	AADD(aCarcEsp,{"ª", " "})
+	AADD(aCarcEsp,{"á", " "})
+	AADD(aCarcEsp,{"à", " "})
+	AADD(aCarcEsp,{"Á", " "})
+	AADD(aCarcEsp,{"À", " "})
+	AADD(aCarcEsp,{"É", " "})
+	AADD(aCarcEsp,{"È", " "})
+	AADD(aCarcEsp,{"Ê", " "})
+	AADD(aCarcEsp,{"ê", " "})
+	AADD(aCarcEsp,{"ã", " "})
+	AADD(aCarcEsp,{"Ã", " "})
+	AADD(aCarcEsp,{"ô", " "})
+	AADD(aCarcEsp,{"Ô", " "})
+	AADD(aCarcEsp,{"õ", " "})
+	AADD(aCarcEsp,{"Õ", " "})
+	AADD(aCarcEsp,{"í", " "})
+	AADD(aCarcEsp,{"Í", " "})
+	AADD(aCarcEsp,{"|", "Pipe"})
+	AADD(aCarcEsp,{"²", " "})
+	AADD(aCarcEsp,{"³", " "})
+	AADD(aCarcEsp,{"£", " "})
+	AADD(aCarcEsp,{"¢", " "})
+	AADD(aCarcEsp,{"¬", " "})
+	AADD(aCarcEsp,{"§", " "})
+	AADD(aCarcEsp,{"'", "Aspa simples"})
+	AADD(aCarcEsp,{'"', "Aspa dupla"})
+	For num:= 1 to Len(aCarcEsp)
+		//Verifica se Algum dos Caracteres Especiais foi Digitado
+		If At(aCarcEsp[num,1], AllTrim(cDado)) <> 0
+			//Se Sim Emite uma Mensagem
+			cDado := StrTran(cDado,aCarcEsp[num,1],"")
+		EndIf
+	Next num
+Return cDado

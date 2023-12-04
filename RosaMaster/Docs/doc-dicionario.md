@@ -2193,6 +2193,24 @@ Conteudo: 1Z
 Descrição: Catalogo de erros do umov
 ]: #
 
+P3_PTFLUIG
+
+[
+Filial: 
+Tipo: Caracter
+Conteudo: /volume/stream/Rmx1aWc=
+Descrição: Configuração Fluig
+]: #
+
+MV_JFLGURL
+
+[
+Filial: 
+Tipo: Caracter
+Conteudo: http:rosamaster129518.fluig.cloudtotvs.com.br 
+Descrição: Url Fulig
+]: #
+
 ## Tabela Genérica
 
 1Z-Catalogo de erros do umov
