@@ -42,7 +42,7 @@ ZZB010 1-ZZB_FILIAL+ZZB_IDFLUI+ZZB_IDUMOV
 
 ZZB010 2-ZZB_FILIAL+ZZB_IDUMOV+ZZB_IDFLUI
 
-ZZB010 1-ZZC_FILIAL+ZZC_IDFLUI+ZZC_SEQ
+ZZC010 1-ZZC_FILIAL+ZZC_IDFLUI+ZZC_SEQ
 
 ## Campos
 
@@ -2226,7 +2226,7 @@ P3_FTOKENS
 Filial: 
 Tipo: Caracter
 Conteudo: d14a4bbc-f565-4113-baae-c50468400748bc022579-44e7-4794-b00b-eb308845cd60
-Descrição: Token Secret Fluig                            
+Descrição: Token Secret Fluig
 ]: #
 
 P3_FCKEY  
