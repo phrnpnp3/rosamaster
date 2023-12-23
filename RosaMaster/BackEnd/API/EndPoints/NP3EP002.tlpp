@@ -41,6 +41,7 @@ CLASS NP3EP002
     PRIVATE DATA cMsg as Character
     PRIVATE DATA cRotina as Character
     PRIVATE DATA lExist as Logical
+    PRIVATE DATA lRet as Logical
     PUBLIC  METHOD New(oJson,aAux,cRotina) CONSTRUCTOR
     PUBLIC  METHOD Create()
     PRIVATE METHOD Mvc()
@@ -48,6 +49,7 @@ CLASS NP3EP002
     PRIVATE METHOD AddUJ2(oModel,oModelUJ2,aStructUJ2)
     PUBLIC METHOD GetError()
     PUBLIC METHOD GetMsg()
+    PRIVATE METHOD TypeField(cField,cValue)
 ENDCLASS
 
 // Construtor
@@ -56,7 +58,7 @@ METHOD New(oJson,aAux,cRotina) CLASS NP3EP002
     Local j
     // Inicia as variaveis
     ::oCabec := oJson['ACABEC']
-    ::oItens  := oJson['AITENS']
+    ::oItens := oJson['AITENS']
     ::aAuxCab := ::oCabec:GetNames()
     ::aAuxIte := {}
     ::aCabec := {}
@@ -64,49 +66,86 @@ METHOD New(oJson,aAux,cRotina) CLASS NP3EP002
     ::cErro := ""
     ::cMsg := ""
     ::cRotina := cRotina
-    // Captura as informações do Json do cabeçalho
-    For i := 1 to Len(::aAuxCab)
-        aAdd(::aCabec, {::aAuxCab[i], ::oCabec:GetJsonText(::aAuxCab[i]), Nil})
-    Next
-    // Ordena o array do cabeçalho
-    If Len(::aCabec) > 0
-        ::aCabec := FWVetByDic(::aCabec, "UJ0")
-    EndIf
-    // Captura as informações do Json dos itens
-    For i := 1 to Len(::oItens)
-        ::aAuxIte := ::oItens[i]:GetNames()
-        ::aItem := {}
-        For j := 1 to Len(::aAuxIte)
-            aAdd(::aItem, {::aAuxIte[j], ::oItens[i]:GetJsonText(::aAuxIte[j]), Nil})
-        Next
-        // Ordena o array do item
-        If Len(::aItem) > 0
-            ::aItem := FWVetByDic(::aItem, "UJ2")
+    // Campos baseados no plano
+    UF2->(DbSetOrder(1)) //UF2_FILIAL + UF2_CODIGO 
+    If UF2->(MsSeek(xFilial("UF2")+self:oCabec["UJ0_CONTRA"]))
+        aAdd( ::aCabec, {'UJ0_TPSERV' , ::TypeField("UJ0_TPSERV",self:oCabec["UJ0_TPSERV"])})
+        aAdd( ::aCabec, {'UJ0_CONTRA' , ::TypeField("UJ0_CONTRA",self:oCabec["UJ0_CONTRA"])})
+        aAdd( ::aCabec, {'UJ0_CODBEN' , ::TypeField("UJ0_CODBEN",self:oCabec["UJ0_CODBEN"])})
+        aAdd( ::aCabec, {'UJ0_PLANOC' , UF2->UF2_PLANO})
+        aAdd( ::aCabec, {'UJ0_US0'    , UF2->UF2_USO})
+        aAdd( ::aCabec, {'UJ0_FILSER' , ::TypeField("UJ0_FILSER",self:oCabec["UJ0_FILSER"])})
+        aAdd( ::aCabec, {'UJ0_OBSERV' , ::TypeField("UJ0_OBSERV",self:oCabec["UJ0_OBSERV"])})
+        aAdd( ::aCabec, {'UJ0_DTFALE' , ::TypeField("UJ0_DTFALE",self:oCabec["UJ0_DTFALE"])})
+        aAdd( ::aCabec, {'UJ0_PERCDE' , Iif(UF2->UF2_PERCEN > 0, 100 - UF2->UF2_PERCEN, 0  )})
+        aAdd( ::aCabec, {'UJ0_NUMSOR' , Iif(UF2->(FieldPos("UF2_NUMSO2")) > 0 .And. !Empty(UF2->UF2_NUMSO2),UF2->UF2_NUMSO2,UF2->UF2_NUMSOR)})
+        aAdd( ::aCabec, {'UJ0_REGRA'  , UF2->UF2_REGRA})
+        aAdd( ::aCabec, {'UJ0_XTIPO'  , ::TypeField("UJ0_XTIPO",self:oCabec["UJ0_XTIPO"])})
+        // aAdd( ::aCabec, {'UJ0_TABPRC' , ::TypeField("UJ0_TABPRC",self:oCabec["UJ0_TABPRC"])})
+        aAdd( ::aCabec, {'UJ0_CLIPV'  , ::TypeField("UJ0_CLIPV",self:oCabec["UJ0_CLIPV"])})
+        aAdd( ::aCabec, {'UJ0_LOJAPV' , ::TypeField("UJ0_LOJAPV",self:oCabec["UJ0_LOJAPV"])})
+        aAdd( ::aCabec, {'UJ0_CONDPV' , ::TypeField("UJ0_CONDPV",self:oCabec["UJ0_CONDPV"])})
+        //preencho os campos de seguro na Ordem de Servico
+        If UI2->(DbSeek(xFilial("UI2")+UF2->UF2_PLNSEG))
+            aAdd( ::aCabec, {'UJ0_PLNSEG'   ,UF2->UF2_PLNSEG})
+            aAdd( ::aCabec, {'UJ0_DSCPLN'   ,UI2->UI2_DESCRI})
+            aAdd( ::aCabec, {'UJ0_PLNM'     ,UI2->UI2_MORTE})
+            aAdd( ::aCabec, {'UJ0_PLNMAC'   ,UI2->UI2_MORACD})
+            aAdd( ::aCabec, {'UJ0_PLNALI'   ,UI2->UI2_AUXALI})
         EndIf
-        aAdd(::aItens,::aItem)
-    Next 
+        // Captura as informações do Json do cabeçalho
+        // For i := 1 to Len(::aAuxCab)
+        //     aAdd(::aCabec, {::aAuxCab[i], ::TypeField(::aAuxCab[i],::oCabec:GetJsonText(::aAuxCab[i])), Nil})
+        // Next
+        // Ordena o array do cabeçalho
+        // If Len(::aCabec) > 0
+        //     ::aCabec := FWVetByDic(::aCabec, "UJ0")
+        // EndIf
+        // Captura as informações do Json dos itens
+        For i := 1 to Len(::oItens)
+            ::aAuxIte := ::oItens[i]:GetNames()
+            ::aItem := {}
+            For j := 1 to Len(::aAuxIte)
+                aAdd(::aItem, {::aAuxIte[j], ::TypeField(::aAuxIte[j],::oItens[i][::aAuxIte[j]]), Nil})
+            Next
+            // Ordena o array do item
+            // If Len(self:aItem) > 0
+            //     ::aItem := FWVetByDic(::aItem, "UJ2")
+            // EndIf
+            aAdd(::aItens,{})
+            ::aItens[Len(::aItens)] := ::aItem
+        Next
+        ::lRet := .t.
+    Else
+        ::cErro := "Plano não encontrado: "+::aAuxCab[1]
+        ::lRet := .f.
+    EndIf
 RETURN
 
 // Cria o apontamento
 METHOD Create() CLASS NP3EP002
     Local lRet := .f.
-    // Escolha da rotina utilizada
-    If AllTrim(UPPER(::cRotina)) == "MVC"
-        lRet := ::Mvc()
-    Else
-        lRet := ::ExecAuto()
+    // Valida se o construtor deu certo
+    If ::lRet
+        // Escolha da rotina utilizada
+        If AllTrim(UPPER(::cRotina)) == "MVC"
+            lRet := ::Mvc()
+        Else
+            lRet := ::ExecAuto()
+        EndIf
     EndIf
 RETURN lRet
 
 // Executa o MVC
 METHOD Mvc() CLASS NP3EP002
-    Local lRet := .f.
+    Local lRet := .t.
     Local oModelMaster
 	Local oStructMaster
 	Local aStructMaster
     Local oModelUJ2    := NIL
 	Local oStructUJ2   := NIL
 	Local aStructUJ2   := NIL
+    Local aErro         := {}
     Local nI 		    := 0
 	// Local nStart    	:= 0
 	Default nOpcao       	 := 3 //Inclusao de Apontamentos
@@ -138,7 +177,7 @@ METHOD Mvc() CLASS NP3EP002
     // se os campos do cabeçalho foram setados com sucesso
 	If lRet
 		If lRet .And. Len(::aItens) > 0
-			lRet := AddUJ2(@oModel,@oModelUJ2,aStructUJ2,::aItens)
+			lRet := ::AddUJ2(@oModel,@oModelUJ2,aStructUJ2)
 		EndIf
 		// Faz-se a valida?o dos dados
 		If lRet .And. ( lRet := oModel:VldData() )
@@ -173,21 +212,31 @@ METHOD AddUJ2(oModel,oModelUJ2,aStructUJ2) CLASS NP3EP002
 	Local nJ	   := 0
 	Local nItErro  := 0
 	Local lRet     := .T.
-
+    Local aErro    := {}
 	UJ2->( DbSetOrder(1) ) //UJ2_FILIAL+UJ2_CODIGO+UJ2_ITEM
 	For nI := 1 To Len(::aItens)
         // tenta adicionar linha
-		If  ( nItErro := oModelGrid:AddLine() ) = 0
+		If  ( nItErro := oModelUJ2:AddLine() ) = 0
 			lRet    := .F.
 			Exit
 		EndIf
 		if lRet
 			For nJ := 1 To Len( ::aItens[nI] )
 				// Verifica se os campos passados existem na estrutura de item
-				If ( aScan( aStructDetail, { |x| AllTrim( x[3] ) ==  AllTrim( ::aItens[nI][nJ][1] ) } ) ) > 0
+				If ( aScan( aStructUJ2, { |x| AllTrim( x[3] ) ==  AllTrim( ::aItens[nI][nJ][1] ) } ) ) > 0
 					If !( oModel:SetValue('UJ2DETAIL', ::aItens[nI][nJ][1], ::aItens[nI][nJ][2] ) )
 						// Caso a atribuição não possa ser feita, por algum motivo (validação, por exemplo)
 						// o método SetValue retorna .F.
+                        aErro := oModel:GetErrorMessage()
+                        ::cErro += "Id do formulário de origem:" 	+ ' [' + AllToChar( aErro[1] ) + ']' 
+                        ::cErro += "Id do campo de origem: " 		+ ' [' + AllToChar( aErro[2] ) + ']' 
+                        ::cErro += "Id do formulário de erro: " 	+ ' [' + AllToChar( aErro[3] ) + ']' 
+                        ::cErro += "Id do campo de erro: " 			+ ' [' + AllToChar( aErro[4] ) + ']' 
+                        ::cErro += "Id do erro: " 					+ ' [' + AllToChar( aErro[5] ) + ']' 
+                        ::cErro += "Mensagem do erro: " 			+ ' [' + AllToChar( aErro[6] ) + ']' 
+                        ::cErro += "Mensagem da solução: " 			+ ' [' + AllToChar( aErro[7] ) + ']' 
+                        ::cErro += "Valor atribuído: " 				+ ' [' + AllToChar( aErro[8] ) + ']' 
+                        ::cErro += "Valor anterior: " 				+ ' [' + AllToChar( aErro[9] ) + ']' 
 						lRet    := .F.
 						nItErro := nI
 						Exit
@@ -208,3 +257,14 @@ RETURN ::cErro
 // Retorna Mensagem
 METHOD GetMsg() CLASS NP3EP002
 RETURN ::cMsg
+
+// Trata o tipo de dados
+METHOD TypeField(cField,cValue) CLASS NP3EP002
+    Local xRet
+    Local cTipo := GetSX3Cache(cField, "X3_TIPO")
+    If cTipo = "D"
+        xRet := CTOD(cValue)
+    Else
+        xRet := cValue
+    EndIF
+RETURN xRet

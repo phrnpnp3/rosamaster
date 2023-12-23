@@ -34,9 +34,7 @@ ZZ8010 1-ZZ8_FILIAL+ZZ8_ID+ZZ8_SEQUEN
 
 ZZ9010 1-ZZ9_FILIAL+ZZ9_CODIGO
 
-ZZA010 1-ZZA_FILIAL+ZZA_IDFLUI
-
-ZZA010 2-ZZA_FILIAL+ZZA_IDUMOV
+ZZA010 1-ZZA_FILIAL+ZZA_SEUQEN
 
 ZZB010 1-ZZB_FILIAL+ZZB_IDFLUI+ZZB_IDUMOV
 
@@ -921,15 +919,15 @@ ZZ8_STATUS
 
 [
 CAMPO
-    -Tipo: 5-Memo
-    -Tamanho: 10
+    -Tipo: 1-Caracter
+    -Tamanho: 2
     -Decimal: 0
     -Formato: 
     -Contexto: Real        
     -Propriedade: Alterar        
 INFORMAÇÕES
-    -Titulo: Json                
-    -Descição: Json                
+    -Titulo: Status                
+    -Descição: Status                
     -Help:
 OPÇÕES
     -Lista:
@@ -2207,7 +2205,7 @@ MV_JFLGURL
 [
 Filial: 
 Tipo: Caracter
-Conteudo: http:rosamaster129518.fluig.cloudtotvs.com.br 
+Conteudo: https://rosamaster129518.fluig.cloudtotvs.com.br
 Descrição: Url Fulig
 ]: #
 

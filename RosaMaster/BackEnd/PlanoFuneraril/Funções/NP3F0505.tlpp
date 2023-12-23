@@ -1,0 +1,317 @@
+#Include 'Protheus.ch'
+#Include 'FWMVCDEF.ch'
+#Include 'RestFul.CH'
+#INCLUDE "TOTVS.CH"
+#INCLUDE "TopConn.ch"
+#INCLUDE 'COLORS.CH'
+#INCLUDE 'FONT.CH'
+#INCLUDE 'RWMAKE.CH'
+#INCLUDE "TBICONN.CH"
+#include "parmtype.ch"
+#INCLUDE "FWADAPTEREAI.CH"
+#Include "TBICODE.CH"
+#include 'fileio.ch'
+#Include "Tlpp-core.th"
+/*
+#---------------------------------------------------------------#
+| Programa:| NP3F0505                          Data:25/10/2023  |
+|---------------------------------------------------------------|
+| Autor:   | NP3 Tecnologia                                     |
+|---------------------------------------------------------------|
+| Objetivo:|Integração Fluig x Protheus x Umov                  |
+|---------------------------------------------------------------|
+|                        ALTERAÇÕES                             |
+|---------------------------------------------------------------|
+|     Analista      |   Data     |  Motivo                      |
+|---------------------------------------------------------------|
+|                   |            |                              |
+|                   |            |                              |
+#---------------------------------------------------------------#
+LINK TDN: ** NÃO TEM **
+*/
+CLASS NP3F0505
+    PRIVATE DATA cTxtErro as Character
+    PRIVATE DATA cAliasZZB as Character
+    PRIVATE DATA cQuery as Character
+    PUBLIC METHOD New() CONSTRUCTOR
+    PUBLIC METHOD EnvToUmov()
+    PUBLIC METHOD RetFromUmovIn(aDados)
+    PUBLIC METHOD RetToFluigIn()
+    PUBLIC METHOD RetFromUmovFi(cZZB_IDFLUIG,cZZB_SEQ,cZZB_DTFIN,cZZB_HRFIN)
+    PUBLIC METHOD RetToFluigFi()
+    PRIVATE METHOD Query()
+    PUBLIC METHOD GetError()
+ENDCLASS
+// Construtor
+METHOD New() CLASS NP3F0505
+    ::cAliasZZB := GetNextAlias()
+    ::cQuery    := ""
+RETURN
+// Envio da tarefa para o umov
+METHOD EnvToUmov() CLASS NP3F0505
+    Local cAliasZZB := ::cAliasZZB
+    Local oUMOV     := NP3UMOV():New()
+    Local aStandardS    := {}
+    Local aCustomS      := {}
+    Local aStandardI    := {}
+    Local aStandardIs   := {}
+    Local aCustomI      := {}
+    Local lReproc       := SuperGetMv("P3_REPROC",,.F.)
+    Local i
+    Local oLog
+    // Monta o filtro
+    If lReproc //Se reprocessa pendentes
+        ::cQuery    := "%ZZB_IDUMOV = ''%"
+    Else
+        ::cQuery    := "%ZZB_IDFLUI = '"+ZZB->ZZB_IDFLUI+"'%"
+    EndIf
+    // Executa a query
+    ::Query()
+    // Preenche as informações para o umov
+    While (cAliasZZB)->(!Eof())
+        // Reinicia as variáveis
+        aStandardS := {}
+        aCustomS   := {}
+        aStandardI := {}
+        aStandardIs:= {}
+        aCustomI   := {}
+        // Buscar IDUMOV da tarefa
+        ZZ9->(DbSetOrder(1))// ZZ9_FILIAL+ZZ9_CODIGO
+        If ZZ9->(DbSeek(xFilial('ZZ9')+(cAliasZZB)->ZZB_CODTAR))
+            // Preenche informações do schedule
+            aAdd(aStandardS,{;
+                {"agent",{{{"alternativeIdentifier",(cAliasZZB)->ZZB_CODVEI}}}},;
+                {"serviceLocal",{{{"alternativeIdentifier",(cAliasZZB)->ZZB_LOCPA}}}},;
+                {"alternativeIdentifier",AllTrim((cAliasZZB)->ZZB_IDFLUI)+AllTrim((cAliasZZB)->ZZB_SEQ)},;
+                {"activitiesOrigin","7"},;
+                {"date",SubStr(DToS(Date()),1,4)+"-"+SubStr(DToS(Date()),5,2)+"-"+SubStr(DToS(Date()),7,2)},;
+                {"hour",SubStr(Time(),1,5)},;
+                {"scheduleType",{{{"alternativeIdentifier",AllTrim(ZZ9->ZZ9_IDMOV)}}}};//{"activityRelationship",{{{"activity",{{{"alternativeIdentifier",AllTrim(ZZ9->ZZ9_IDMOV)}}}}}}};
+            })
+            aAdd(aCustomS,{})
+            // Preenche informações do scheduleItem
+            ZZC->(DbSetOrder(1))
+            If ZZC->(DbSeek(xFilial("ZZC")+(cAliasZZB)->ZZB_IDFLUI+(cAliasZZB)->ZZB_SEQ))
+                While ZZC->(!EOF()) .AND. ZZC->(ZZC_IDFLUI+ZZC_SEQ) == (cAliasZZB)->ZZB_IDFLUI+(cAliasZZB)->ZZB_SEQ
+                    aStandardI := {}
+                    aAdd(aStandardI,{;
+                        {"schedule",{{{"alternativeIdentifier",AllTrim((cAliasZZB)->ZZB_IDFLUI)+AllTrim((cAliasZZB)->ZZB_SEQ)}}}},;
+                        {"item",{{{"alternativeIdentifier",ZZC->ZZC_ITEM}}}};
+                    })
+                    aAdd(aStandardIs,aStandardI)
+                    ZZC->(DbSkip())
+                EndDo
+            EndIf
+            aAdd(aCustomI,{})
+            // Envia a tarefa para o umov
+            lRet := oUMOV:Schedules(aStandardS,aCustomS)
+            If lRet
+                // LOG
+                oLog := NP3LOG01():New(AllTrim((cAliasZZB)->ZZB_IDFLUI)+AllTrim((cAliasZZB)->ZZB_SEQ),date(),SubStr(Time(),1,5),"AUTO","","02")
+                oLog:Grava()
+                // Posiciona pelo Recno para gravar
+                ZZB->(DbGoTo((cAliasZZB)->R_E_C_N_O_))
+                If ZZB->(Recno()) == (cAliasZZB)->R_E_C_N_O_
+                    If RecLock('ZZB',.f.)
+                        ZZB->ZZB_IDUMOV := oUMOV:GetIdUmov()
+                        ZZB->(MsUnlock())
+                    EndIf
+                EndIf
+                For i := 1 To Len(aStandardIs)
+                    lRet := oUMOV:ScheduleItems(aStandardIs[i],aCustomI)
+                    If !lRet
+                        ::cTxtErro := oUMOV:GetError()
+                        Exit
+                    EndIf
+                Next
+            Else
+                ::cTxtErro := oUMOV:GetError()
+            EndIf
+        EndIf
+        (cAliasZZB)->(DbSkip())
+    EndDo
+    // Finaliza o alias
+    If Select(cAliasZZB) <> 0
+        (cAliasZZB)->(DbCloseArea())
+    EndIf
+RETURN lRet
+// Retorna o inicio da tarefa do umov para o protheus
+METHOD RetFromUmovIn(aDados) CLASS NP3F0505
+    Local lRet := .f.
+    Local cIdSchedule       := ""
+    Local cDescription      := ""
+    Local nPosSchedule      := 0
+    Local nPosIdSchedule    := 0
+    Local nPosSections      := 0
+    Local nPosItens         := 0
+    Local nPosFields        := 0
+    Local nPosFieldHistory  := 0
+    Local nPosFieldValue    := 0
+    Local nPosDescription   := 0
+    Local aActvHist         := {}
+    Local aSchedule         := {}
+    Local aSections         := {}
+    Local aSection          := {}
+    Local aItens            := {}
+    Local aItem             := {}
+    Local aFields           := {}
+    Local aField            := {}
+    Local aFieldValues      := {}
+    Local aValues           := {}
+    Local aCampos           := {{"Data Deslocamento","ZZB_DTINI"},{"Hora inicial deslocamento","ZZB_HRINI"},{"Observação","ZZB_RESUMO"}}
+    Local i
+    Local j
+    Local k
+    Local x
+    Local y
+    // Verifica se retornou dados
+    If Len(aDados) > 0
+        // Pegamos o array do activeHistory
+        aActvHist := aDados[2]
+        // Pegamos a posicão do schedule
+        nPosSchedule := aScan(aActvHist, {|x| AllTrim(x[1]) == "schedule" })
+        aSchedule := aActvHist[nPosSchedule][2]
+        // Pegamos a posição do id do schedule
+        nPosIdSchedule := aScan(aSchedule, {|x| AllTrim(x[1]) == "id" })
+        cIdSchedule := aSchedule[nPosIdSchedule][2]
+        // Posiciona na tarefa no Protheus
+        ZZB->(DbSetOrder(2)) //ZZB_FILIAL+ZZB_IDUMOV+ZZB_IDFLUI
+        If ZZB->(DbSeek(xFilial('ZZB')+cIdSchedule))
+            // Pegamos a posição do sections
+            nPosSections := aScan(aActvHist, {|x| AllTrim(x[1]) == "sections" })
+            aSections := aActvHist[nPosSections][2]
+            // Valida tamanho de aSections
+            If Len(aSections)
+                For i := 1 to Len(aSections)
+                    aSection := aSections[i][2]
+                    // Busca posição do array de itens
+                    nPosItens := aScan(aSection, {|x| AllTrim(x[1]) == "items" })
+                    aItens := aSection[nPosItens][2]
+                    If Len(aItens)
+                        For j := 1 to Len(aItens)
+                            aItem := aItens[j][2]
+                            // Busca posição de fields
+                            nPosFields := aScan(aItem, {|x| AllTrim(x[1]) == "fields" })
+                            aFields := aItem[nPosFields][2]
+                            If Len(aFields)
+                                For k := 1 to Len(aFields)
+                                    aField := aFields[k,2]
+                                    // Busca descrição
+                                    nPosDescription := aScan(aField, {|x| AllTrim(x[1]) == "description" })
+                                    cDescription := aField[nPosDescription][2]
+                                    // Busca posição de fieldHistory
+                                    nPosFieldHistory := aScan(aField, {|x| AllTrim(x[1]) == "fieldHistory" })
+                                    aFieldValues := aField[nPosFieldHistory][2]
+                                    If Len(aFieldValues)
+                                        nPosFieldValue := aScan(aFieldValues, {|x| AllTrim(x[1]) == "value" })
+                                        aAdd(aValues,{})
+                                        aValues[Len(aValues)] := {cDescription,aFieldValues[nPosFieldValue][2]}
+                                    EndIf
+                                Next
+                                If RecLock('ZZB',.f.)
+                                    If ZZB->ZZB_STATUS == "1"
+                                        For x := 1 to Len(aCampos)
+                                            For y := 1 to Len(aValues)
+                                                If aCampos[x][1] == aValues[y][1]
+                                                    If aCampos[x][2] == "ZZB_RESUMO"
+                                                        ZZB->&(aCampos[x][2]) := AllTRim(ZZB->&(aCampos[x][2])) + aValues[y][2]
+                                                    ElseIf aCampos[x][2] == "ZZB_DTINI"
+                                                        ZZB->&(aCampos[x][2]) := StoD(Replace(aValues[y][2],'-',''))
+                                                    Else
+                                                        ZZB->&(aCampos[x][2]) := aValues[y][2]
+                                                    EndIF
+                                                EndIf
+                                            Next
+                                        Next                            
+                                        // LOG
+                                        oLog := NP3LOG01():New(AllTrim(ZZB->ZZB_IDFLUI)+AllTrim(ZZB->ZZB_SEQ),date(),SubStr(Time(),1,5),"AUTO","","03")
+                                        oLog:Grava()
+                                        // INICIO FLUIG
+                                        ZZB->ZZB_STATUS := "2" // TODO: deverá ser alterado o status quando retornar a alteração para o fluig e remove daqui
+                                    EndIf
+                                    ZZB->(MsUnlock())
+                                    lRet := .t.
+                                    // Finalizar tarefa
+                                    ::RetFromUmovFi(ZZB->ZZB_IDFLUI,ZZB->ZZB_SEQ,ZZB->ZZB_DTINI,ZZB->ZZB_HRINI)
+                                EndIf
+                            EndIf
+                        Next
+                    EndIf
+                Next
+            EndIf
+        EndIf
+    EndIf
+RETURN lRet
+// Retorna para o fluig o inicio da tarefa
+METHOD RetToFluigIn() CLASS NP3F0505
+    Local cAliasZZB := ::cAliasZZB
+    ::cQuery    := "%ZZB_DTINI <> '' AND ZZB_HRINI <> '' ZZB_STATUS = '1'%"// Status 1=Não iniciado
+    ::Query()
+    // TODO: ZZB_STATUS := "2" Iniciado
+    If Select(cAliasZZB) <> 0
+        (cAliasZZB)->(DbCloseArea())
+    EndIf
+RETURN
+// Retorna o fim da tarefa do umov para o protheus
+METHOD RetFromUmovFi(cZZB_IDFLUI,cZZB_SEQ,cZZB_DTFIN,cZZB_HRFIN) CLASS NP3F0505
+    Local cSeq := ""
+    Local oLog
+    // Valida a possibilidade de ter uma tarefa anterior
+    If Val(cZZB_SEQ)-1 > 0
+        cSeq := StrZero(Val(cZZB_SEQ)-1,2)
+        // Posiciona na tarefa anterior
+        ZZB->(DbSetOrder(1)) //ZZB_FILIAL+ZZB_IDFLUI+ZZB_IDUMOV
+        If ZZB->(DbSeek(xFilial("ZZB")+cZZB_IDFLUI))
+            While ZZB->(!EOF()) .AND. ZZB->(ZZB_FILIAL+ZZB_IDFLUI) == xFilial("ZZB")+cZZB_IDFLUI
+                If ZZB->ZZB_SEQ == cSeq .and. ZZB->ZZB_STATUS == "2" 
+                    If RecLock('ZZB',.f.)
+                        ZZB->ZZB_DTFIN := cZZB_DTFIN
+                        ZZB->ZZB_HRFIN := cZZB_HRFIN
+                        ZZB->(MsUnlock())
+                        // LOG
+                        oLog := NP3LOG01():New(AllTrim(ZZB->ZZB_IDFLUI)+AllTrim(ZZB->ZZB_SEQ),date(),SubStr(Time(),1,5),"AUTO","","05")
+                        oLog:Grava()
+                        exit
+                    EndIf
+                EndIf
+                ZZB->(DbSkip())
+            EndDo
+        EndIf
+    EndIf
+    /* TODO: preencher os campos:
+    ZZB_RESUMO
+    ZZB_KM */
+RETURN
+// Retorna para o fluig o fim da tarefa
+METHOD RetToFluigFi() CLASS NP3F0505
+    Local cAliasZZB := ::cAliasZZB
+    ::cQuery    := "%ZZB_DTFIN <> '' AND ZZB_HRFIN <> '' ZZB_STATUS = '2'%"// Status 2=Iniciado
+    ::Query()
+    // TODO: ZZB_STATUS := "3" Concluido
+    If Select(cAliasZZB) <> 0
+        (cAliasZZB)->(DbCloseArea())
+    EndIf
+RETURN
+// Query de todas as funções
+METHOD Query() CLASS NP3F0505
+    Local cAliasZZB := ::cAliasZZB
+    Local cQuery    := ::cQuery
+    Local lRet      := .f.
+    // Query do movimento de tarefa
+    If Select(cAliasZZB) <> 0
+        (cAliasZZB)->(DbCloseArea())
+    EndIf
+    BeginSql alias cAliasZZB
+        Select * 
+        from %Table:ZZB% ZZB 
+        Where ZZB_FILIAL = %Exp:xFilial("ZZB")%
+            and %Exp:cQuery%
+            and ZZB.%notDel%
+    EndSql
+    If (cAliasZZB)->(!EOF())
+        lRet := .t.
+    EndIf
+RETURN lRet
+// Retorna o erro
+METHOD GetError() CLASS NP3F0505
+RETURN ::cTxtErro

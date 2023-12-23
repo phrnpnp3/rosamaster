@@ -40,6 +40,7 @@ CLASS NP3EP003
     PRIVATE DATA aAuxTar as Array
     PRIVATE DATA cErro as Character
     PRIVATE DATA cMsg as Character
+    PRIVATE DATA cJson as Character
     PRIVATE DATA ZZB_IDFLUI as Character
     PUBLIC  METHOD New(oJson,aAux,cId) CONSTRUCTOR
     PUBLIC  METHOD Create()
@@ -50,12 +51,13 @@ CLASS NP3EP003
 ENDCLASS
 
 // Construtor
-METHOD New(oJson,aAux,cId) CLASS NP3EP003 
+METHOD New(oJson,aAux,cId,cJson) CLASS NP3EP003 
     Local i
     Local j
     Local k
     Local l
     ::ZZB_IDFLUI := cId
+    ::cJson := cJson
     // Inicia as variaveis de tarefas
     ::oTarefas := oJson['TAREFAS']
     ::aTarefas := {}

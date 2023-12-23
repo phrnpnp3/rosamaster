@@ -1,0 +1,129 @@
+#Include 'Protheus.ch'
+#Include 'FWMVCDEF.ch'
+#Include 'RestFul.CH'
+#INCLUDE "TOTVS.CH"
+#INCLUDE "TopConn.ch"
+#INCLUDE 'COLORS.CH'
+#INCLUDE 'FONT.CH'
+#INCLUDE 'RWMAKE.CH'
+#INCLUDE "TBICONN.CH"
+#include "parmtype.ch"
+#INCLUDE "FWADAPTEREAI.CH"
+#Include "TBICODE.CH"
+#include 'fileio.ch'
+#Include "Tlpp-core.th"
+/*
+#---------------------------------------------------------------#
+| Programa:| NP3LOG01                          Data:25/10/2023  |
+|---------------------------------------------------------------|
+| Autor:   | NP3 Tecnologia                                     |
+|---------------------------------------------------------------|
+| Objetivo:|Classe de geração de log                            |
+|---------------------------------------------------------------|
+|                        ALTERAÇÕES                             |
+|---------------------------------------------------------------|
+|     Analista      |   Data     |  Motivo                      |
+|---------------------------------------------------------------|
+|                   |            |                              |
+|                   |            |                              |
+#---------------------------------------------------------------#
+LINK TDN: ** NÃO TEM **
+*/
+/*
+STATUS
+-0x-TAREFAS
+-01 TAREFA ENVIADA DO FLUIG PARA O PROTHEUS
+-02 TAREFA ENVIADO DO PROTHEUS PARA O UMOV
+-03 INICIO DA TAREFA DO UMOV PARA O PROTHEUS
+-04 INICIO DA TAREFA DO PROTHEUS PARA O FLUIG
+-05 FINAL DA TAREFA DO UMOV PARA O PROTHEUS
+-06 FINAL DA TAREFA DO PROTHEUS PARA O FLUIG
+*/
+CLASS NP3LOG01
+	PRIVATE Data _ID        as Character
+	PRIVATE Data _SEQUENCIA as Character
+	PRIVATE Data _DATA
+	PRIVATE Data _HORA      as Character
+	PRIVATE Data _USUARIO   as Character
+	// PRIVATE Data _JUSTIF    as Character
+	// PRIVATE Data _DESCRI    as Character
+	PRIVATE Data _JSON      as Character
+	PRIVATE Data _STATUS    as Character
+	PRIVATE Data _cTab		as Character
+	PUBLIC METHOD New(_ID,_DATA,_HORA,_USUARIO/*,_JUSTIF,_DESCRI*/,_JSON,_STATUS) CONSTRUCTOR
+	PRIVATE METHOD RETSEQ()
+	// PRIVATE METHOD RETSTATS(_STATUS)
+	PUBLIC METHOD GRAVA()
+ENDCLASS
+
+// CONSTRUCTOR
+METHOD New(_ID,_DATA,_HORA,_USUARIO/*,_JUSTIF,_DESCRI*/,_JSON,_STATUS) CLASS NP3LOG01
+	// self:RETSTATS(_STATUS)
+	self:_ID        := _ID
+	self:_DATA      := _DATA
+	self:_HORA      := _HORA
+	self:_USUARIO   := _USUARIO
+	// self:_JUSTIF    := _JUSTIF
+	// self:_DESCRI    := _DESCRI
+	self:_JSON      := _JSON
+	self:_STATUS    := _STATUS
+	self:_cTab		:= SuperGetMv("P3_TABLOG",,"ZZ8")
+	// Cria a tabela
+	DbSelectArea(self:_cTab)
+	(self:_cTab)->(DbSetOrder(1))
+Return self
+
+// RETORNA A SEQUENCIA DO ID 
+METHOD RETSEQ() CLASS NP3LOG01
+	Local cAlias := GetNextAlias()
+	Local cID := self:_ID
+	// Local cTab := self:_cTab
+    // Verifica a sequencia
+	BEGINSQL ALIAS cAlias
+       SELECT MAX(ZZ8_SEQUEN) as ZZ8_SEQUEN
+       FROM %TABLE:ZZ8% ZZ8 (NOLOCK)
+       WHERE %NOTDEL%
+       AND ZZ8_ID = %Exp:cID%
+	ENDSQL
+	If (cAlias)->(!Eof())
+		self:_SEQUENCIA := Iif(!EMPTY((cAlias)->ZZ8_SEQUEN),StrZero(VAL((cAlias)->ZZ8_SEQUEN)+1,3),"001")
+	Else
+		self:_SEQUENCIA := "001"
+	EndIf
+Return .T.
+
+// RETORNA STATUS 
+// METHOD RETSTATS(_STATUS) CLASS NP3LOG01
+// 	If len(_STATUS) > 3
+// 		do case
+//             // TODO: Verifiar rotinas
+//             case UPPER(ALLTRIM(_STATUS)) == "MATA110"
+//                 self:_STATUS := "00"
+//             case UPPER(ALLTRIM(_STATUS)) == "MATA010"
+//                 self:_STATUS := "02"
+//             case UPPER(ALLTRIM(_STATUS)) == "MATA415"
+//                 self:_STATUS := "03"
+//             case UPPER(ALLTRIM(_STATUS)) == "MATA120"
+//                 self:_STATUS := "13"
+//         endcase
+// 	Else
+// 		self:_STATUS := _STATUS
+// 	EndIf
+// Return .T.
+
+// GRAVAÇÃO DO LOG
+METHOD GRAVA() CLASS NP3LOG01
+	Local cTab := ::_cTab
+	self:RETSEQ()
+	RECLOCK( (cTab), .T. )
+	(cTab)->&(cTab+"_ID")		:= self:_ID
+	(cTab)->&(cTab+"_SEQUEN")  	:= self:_SEQUENCIA
+	(cTab)->&(cTab+"_DATA ")  	:= self:_DATA
+	(cTab)->&(cTab+"_HORA")		:= self:_HORA
+	(cTab)->&(cTab+"_USER")		:= self:_USUARIO
+	// (cTab)->&(cTab+"_JUSTIF")	:= self:_JUSTIF
+	// (cTab)->&(cTab+"_DESJU")	:= self:_DESCRI
+	(cTab)->&(cTab+"_JSON")		:= self:_JSON
+	(cTab)->&(cTab+"_STATUS")	:= self:_STATUS
+	(cTab)->(MSUNLOCK())
+Return .T.

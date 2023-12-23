@@ -1,0 +1,131 @@
+#Include 'Protheus.ch'
+#Include 'FWMVCDEF.ch'
+#Include 'RestFul.CH'
+#INCLUDE "TOTVS.CH"
+#INCLUDE "TopConn.ch"
+#INCLUDE 'COLORS.CH'
+#INCLUDE 'FONT.CH'
+#INCLUDE 'RWMAKE.CH'
+#INCLUDE "TBICONN.CH"
+#include "parmtype.ch"
+#INCLUDE "FWADAPTEREAI.CH"
+#Include "TBICODE.CH"
+#include 'fileio.ch'
+#Include "Tlpp-core.th"
+/*
+#---------------------------------------------------------------#
+| Programa:| NP3FLUIG                          Data:17/02/2023  |
+|---------------------------------------------------------------|
+| Autor:   | NP3 Tecnologia - JLS                               |
+|---------------------------------------------------------------|
+| Objetivo:|Classe de comuniação com o Fluig                    |
+|---------------------------------------------------------------|
+|                        ALTERAÇÕES                             |
+|---------------------------------------------------------------|
+|     Analista      |   Data     |  Motivo                      |
+|---------------------------------------------------------------|
+|                   |            |                              |
+|                   |            |                              |
+#---------------------------------------------------------------#
+LINK TDN: ** NÃO TEM **
+*/
+CLASS NP3FLUIG
+
+	DATA _cPath
+
+	DATA _cURL
+	DATA _cX_URL
+	DATA _cAccessToken
+	DATA _cTokenSecret
+	DATA _cConsumerKey
+	DATA _cConsumerSecret
+
+	DATA _cAccess
+	DATA _cRequest
+	DATA _cAuthorize
+
+	DATA _oUrl
+	DATA _oClient
+
+	DATA _oBody
+	DATA _cBody
+
+	DATA _cRet
+
+	METHOD New()
+	METHOD Conecta()
+	METHOD Consulta()
+	METHOD Inclui()
+	METHOD Altera()
+	METHOD Exclui()
+ENDCLASS
+
+// Construtor
+METHOD New() CLASS NP3FLUIG
+	self:_cURL              := SuperGetMV("P3_JFLGURL",.T.,"")
+	self:_cAccessToken      := SuperGetMV("P3_FTOKENA",.F.,"")
+	self:_cTokenSecret      := SuperGetMV("P3_FTOKENS",.F.,"")
+	self:_cConsumerKey      := SuperGetMV("P3_FCKEY",.F.,"")
+	self:_cConsumerSecret   := SuperGetMV("P3_FCSECRE",.F.,"")
+
+	self:_cAccess           := self:_cURL+'/portal/api/rest/oauth/access_token'
+	self:_cRequest          := self:_cURL+'/portal/api/rest/oauth/request_token'
+	self:_cAuthorize        := self:_cURL+'/portal/api/rest/oauth/authorize'
+
+	self:_oUrl              := FWoAuthURL():New(self:_cRequest ,self:_cAuthorize ,self:_cAccess)
+RETURN
+
+// Conecta ao Fluig
+METHOD Conecta() CLASS NP3FLUIG
+
+	self:_cX_URL            := self:_cURL + self:_cPath
+
+	self:_oClient           := fwOAuthClient():New(self:_cConsumerKey,self:_cConsumerSecret ,self:_oUrl ,self:_cX_URL)
+
+	self:_oClient:cOAuthVersion   := "1.0"
+	self:_oClient:SetContentType("application/json")
+	self:_oClient:setMethodSignature("HMAC-SHA1")
+	self:_oClient:setToken(self:_cAccessToken)
+	self:_oClient:setSecretToken(self:_cTokenSecret)
+	self:_oClient:makeSignBaseString("POST",self:_cX_URL)
+	self:_oClient:MakeSignature()
+
+	fwJsonDeserialize(self:_cBody, @self:_oBody)
+
+	self:_cRet := self:_oClient:Post(self:_cX_URL,"" ,self:_cBody)
+
+Return self:_cRet
+
+RETURN
+
+// Consulta o Fluig
+METHOD Consulta(cBody) CLASS NP3FLUIG
+
+	self:_cPath             := " "//????????
+	self:_cBody             := cBody
+
+RETURN self:Conecta()
+
+// Inclui no Fluig
+METHOD Inclui(cBody) CLASS NP3FLUIG
+
+	self:_cPath             := " "//????????
+	self:_cBody             := cBody
+
+RETURN self:Conecta()
+
+// Altera no Fluig
+METHOD Altera(cBody) CLASS NP3FLUIG
+
+	self:_cPath             := " "//????????
+	self:_cBody             := cBody
+
+RETURN self:Conecta()
+
+// Exclui no Fluig
+METHOD Exclui(cBody) CLASS NP3FLUIG
+
+	self:_cPath             := " "//"/api/public/2.0/workflows/cancelInstance" ou "/api/public/ecm/dataset/datasets"
+	self:_cBody             := cBody
+
+RETURN self:Conecta()

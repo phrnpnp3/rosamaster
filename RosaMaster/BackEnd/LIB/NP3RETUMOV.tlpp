@@ -1,0 +1,252 @@
+#Include 'RestFul.CH'
+#INCLUDE "TOTVS.CH"
+#INCLUDE "TopConn.ch"
+#INCLUDE 'RWMAKE.CH'
+#INCLUDE "TBICONN.CH"
+#include 'tlpp-core.th'
+/*
+#---------------------------------------------------------------#
+| Programa:| NP3UMOV                            Data:11/04/2023 |
+|---------------------------------------------------------------|
+| Autor:   | NP3 Tecnologia                                     |
+|---------------------------------------------------------------|
+| Objetivo:|Class de retorno do umov                            |
+|---------------------------------------------------------------|
+|                        ALTERAÇÃES                             |
+|---------------------------------------------------------------|
+|     Analista      |   Data     |  Motivo                      |
+|---------------------------------------------------------------|
+|                   |            |                              |
+|                   |            |                              |
+#---------------------------------------------------------------#
+LINK TDN: ** NÃO TEM **
+*/
+CLASS NP3RETUMOV FROM NP3LIB
+    DATA cError     AS Character
+    DATA cWarning   AS Character
+    DATA oXML       AS Object
+    DATA nTimeOut   AS Integer
+    DATA aHeadOut   AS array
+    DATA cHeadRet   AS Character
+    DATA cRetGet    AS Character
+    DATA nX         AS Integer
+    DATA nY         AS Integer
+    DATA nZ         AS Integer
+    DATA nStart     AS Integer
+    DATA lRet       AS Logical
+
+    DATA cCOutInit  AS Character
+    DATA cCOutEnd   AS Character
+    DATA cCOutKey   AS Character
+    DATA cCOutXml   AS Character
+    DATA cCOutRet   AS Character
+    
+    DATA cContType  AS Character
+
+    DATA cUrl       AS Character
+    DATA cApi       AS Character
+    DATA cKey       AS Character 
+    DATA cPATH      AS Character
+    DATA cTxtErro   AS Character 
+    DATA cID        AS Character
+    DATA cXmlP      AS Character
+    DATA cXmlG      AS Character
+    DATA cRetTag    AS Character 
+    DATA aRetUmov    AS array
+    
+    PUBLIC METHOD New() CONSTRUCTOR
+    METHOD Init()
+    PUBLIC METHOD Process()
+    METHOD Finish()
+    // METHOD GetActivity("<activity>") //Capturar a tarefa
+    METHOD GetServiceLocal()
+    METHOD GetItems() //Capturar os itens da tarefa    
+    METHOD GetSchedules() //Capturar a tarefa
+    METHOD GetSchedItems()
+    METHOD GetAgent()
+    PUBLIC METHOD RetId(cXmlP)
+    METHOD RetInf(cXmlG,cTag)
+    PUBLIC METHOD RetActHis(cXmlG)
+    METHOD ActivityHistory()
+    PUBLIC METHOD GetRetGet()
+    PUBLIC METHOD GetaRetUmov()
+    PUBLIC METHOD GetError()
+ENDCLASS
+
+// Construtor
+METHOD New() CLASS NP3RETUMOV
+
+    _Super:New()
+
+    ::cError        := ""
+    ::cWarning      := ""
+    ::oXML          := Nil
+    ::nTimeOut      := 120
+    ::aHeadOut      := {}
+    ::cHeadRet      := ""
+    ::cRetGet       := ""
+    ::nX            := 0
+    ::lRet          := .T.
+
+    ::cCOutInit     := "----------> NP3 - INICIO DA INTEGRAÇÃO "
+    ::cCOutEnd      := "----------> NP3 - FIM DA INTEGRAÇÃO "
+    ::cCOutKey      := "----------> NP3 - APIKEY: "
+    ::cCOutXml      := "----------> NP3 - XML: "
+    ::cCOutRet      := "----------> NP3 - RETORNO: "
+    ::cContType     := "Content-Type: application/x-www-form-urlencoded"
+
+    ::cUrl          := 'https://api.umov.me/CenterWeb/api/'
+    ::cApi          := ""
+    ::cKey          := GetMV("P3_APIKEY")//"37430e401bfd04b5a8f129482e2fae387502f9"
+
+    ::cPath         := "/activityHistoryHierarchical/"
+    ::cTxtErro      := ""
+    ::nStart        := Seconds()
+	  ::cId           := ""
+	  ::cXmlP         := ""
+	  ::cXmlG         := ""
+	  ::cRetTag       := ""
+	  ::aRetUmov      := {}
+
+RETURN
+
+//Inicializa os metodos
+METHOD Init() CLASS NP3RETUMOV
+  ConOut(::cCOutInit  )
+  Conout(::cCOutKey   + ::cKey)
+  aadd(::aHeadOut,::cContType)
+  ::cApi := ::cUrl+::cKey + ::cPath 
+RETURN
+
+//Processa o xml
+METHOD Process() CLASS NP3RETUMOV
+  ::lRet := .T.
+  // Inicia o processo
+  ::Init()
+  // Executa o get
+  ::cRetGet := HttpGet(::cApi + ::cId + ".xml","",::nTimeOut,::aHeadOut,@::cHeadRet)
+  // Verifica retorno
+	If ValType(::cRetGet) <> "U"
+		::oXML := XmlParser(::cRetGet,"_",@::cError,@::cWarning)
+		Conout(::cCOutRet + ::cRetGet)
+		::cTxtErro := ""
+    // Verifca o erro
+		If  "ERROR" $ UPPER(::cRetGet)
+			::cTxtErro := "Ocorreu um erro de atualização no uMov:" + ::cEnter
+		EndIf
+    // Valida se retorou com erro
+		If !Empty(::cTxtErro)
+			::lRet := .F.
+			::cTxtErro += ::cEnter + ::MsgUmov(::oXML:_Result:_StatusCode:Text)//NP3-25/10/2022
+			::cTxtErro += ::cEnter + ::oXML:_Result:_StatusCode:Text + " - " + ::oXML:_Result:_Errors:Text //NP3-25/10/2022
+			If ::IsBlind
+				FwLogMsg("INFO", /*cTransactionId*/, "UMOV", FunName(), "", "01", ::cTxtErro, 0, (::nStart - Seconds()), {}) // nStart Ã© declarada no inicio da função
+			Else
+				MsgStop(::cTxtErro,"Atenção")
+			Endif
+		EndIf
+	Else
+		FwLogMsg("INFO", /*cTransactionId*/, "UMOV", FunName(), "", "01", "Erro no retorno do HTTPGET = NIL", 0, (::nStart - Seconds()), {}) // nStart Ã© declarada no inicio da função
+	Endif
+  // Finaliza o processo
+  ::Finish()
+RETURN ::lRet
+
+//Finaliza os metodos
+METHOD Finish() CLASS NP3RETUMOV
+	Conout(::cCOutXml + ::cXml)
+	Conout(::cCOutEnd + ::cCOutInit)
+RETURN
+
+//Locais do umov
+METHOD GetServiceLocal(aStandard,aCustom,cAltId,cAltIdIt,lCanc) CLASS NP3RETUMOV
+
+RETURN ::lRet
+
+//Items do umov
+METHOD GetItems(aStandard,aCustom,cAltId,cAltIdIt,lCanc) CLASS NP3RETUMOV
+
+RETURN ::lRet
+
+//Agendamento do umov
+METHOD GetSchedules(aStandard,aCustom,cAltId,cAltIdIt,lCanc) CLASS NP3RETUMOV
+
+RETURN ::lRet
+
+//Items do agendamento do umov
+METHOD GetSchedItems(aStandard,aCustom,cAltId,cAltIdIt,lCanc) CLASS NP3RETUMOV
+
+RETURN ::lRet
+
+//Agent do umov
+METHOD GetAgent(aStandard,aCustom,cAltId,cAltIdIt,lCanc) CLASS NP3RETUMOV
+
+RETURN ::lRet
+
+METHOD RetId(cXmlP) CLASS NP3RETUMOV
+  Local oJson		:= JsonObject():New()
+  ::cXmlP := cXmlP
+  oJson:FromJson(::cXmlP)
+  ::cId := OJSON["historyId"]//TODO: validar propriedade
+  FreeObj(oJson)
+RETURN ::lRet//TODO: Se encontrou a propriedade e tem id, validar true
+
+METHOD RetInf(cXmlG,cTag) CLASS NP3RETUMOV
+  Local oXml := TXmlManager():New()
+  Local cErro
+  ::cXmlG := cXmlG
+  oXml:Parse(::cXmlG)
+  oXmlSection := oXml
+  If Empty(cErro := oXml:Error())
+    If !Empty(cTag)
+      ::cRetTag := oXml:xPathGetNodeValue(cTag)
+    Else
+      ::lRet := .f.
+    EndIf
+  Else
+    ::lRet := .f.
+  EndIf
+  FreeObj(oXml)
+RETURN ::lRet//TODO: Se encontrou a propriedade e tem id, validar true
+
+METHOD RetActHis(cXmlG) CLASS NP3RETUMOV
+  Local ::oXml := TXmlManager():New()
+  ::lRet := .t.
+  ::cXmlG := cXmlG
+  ::oXml:Parse(::cXmlG)
+  If Empty(cErro := ::oXml:Error())
+    ::aRetUmov :=  {::oXml:cName,::ActivityHistory()}
+  Else
+    ::lRet := .f.
+  EndIf
+  FreeObj(::oXml)
+RETURN ::lRet
+
+METHOD ActivityHistory() CLASS NP3RETUMOV
+  Local aDados := {}
+  Local i 
+  Local nTam
+  If ::oXml:DOMHasChildNode()//Verifica se tem nó filho
+    If ::oXml:DOMChildNode()//Anda para o nivel dos nó filhos, posicionando no primeiro nó
+      nTam := ::oXml:DOMSiblingCount()//Quantidade de nó no mesmo nível de nó
+      For i := 1 to nTam
+        aAdd(aDados,{::oXml:cName,Iif(::oXml:DOMHasChildNode(),::ActivityHistory(),::oXml:cText)})
+        ::oXml:DOMNextNode()
+      Next
+      ::oXml:DOMParentNode()//Retorna ao nivel anterior
+    EndIf
+  Else
+    If !Empty(::oXml:cText) //Se tem conteudo
+      aAdd(aDados,{::oXml:cName,::oXml:cText})
+    EndIf
+  EndIf
+RETURN aDados
+
+METHOD GetRetGet() CLASS NP3RETUMOV
+RETURN ::cRetGet
+
+METHOD GetaRetUmov() CLASS NP3RETUMOV
+RETURN ::aRetUmov
+
+METHOD GetError() CLASS NP3RETUMOV
+RETURN ::cError+::cTxtErro
