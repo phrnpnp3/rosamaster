@@ -227,7 +227,7 @@ METHOD RetFromUmovIn(aDados) CLASS NP3F0505
                                         oLog := NP3LOG01():New(AllTrim(ZZB->ZZB_IDFLUI)+AllTrim(ZZB->ZZB_SEQ),date(),SubStr(Time(),1,5),"AUTO","","03")
                                         oLog:Grava()
                                         // INICIO FLUIG
-                                        ZZB->ZZB_STATUS := "2" // TODO: deverá ser alterado o status quando retornar a alteração para o fluig e remove daqui
+                                        ::RetToFluigIn()
                                     EndIf
                                     ZZB->(MsUnlock())
                                     lRet := .t.
@@ -243,12 +243,77 @@ METHOD RetFromUmovIn(aDados) CLASS NP3F0505
     EndIf
 RETURN lRet
 // Retorna para o fluig o inicio da tarefa
-METHOD RetToFluigIn() CLASS NP3F0505
+METHOD RetToFluigIn(cStatus) CLASS NP3F0505
     Local cAliasZZB := ::cAliasZZB
-    ::cQuery    := "%ZZB_DTINI <> '' AND ZZB_HRINI <> '' ZZB_STATUS = '1'%"// Status 1=Não iniciado
+    Local oFluig
+    Local oForms
+    Local oJsonFld
+    Local oJsonCst
+    Local aConstraints := {}
+    Local aFields := {}
+	Local oConstraints
+    Local oFields
+    Local cDs := SuperGetMv("P3_FLUIDS",,"ds_np3_atualiza_tarefas_umov")
+    Default cStatus := "2"
+    ::cQuery    := "%ZZB_DTINI <> '' AND ZZB_HRINI <> '' AND ZZB_STATUS = '"+Iif(cStatus<>"2","2","1" )+"'%"// Status 1=Não iniciado
     ::Query()
-    // TODO: ZZB_STATUS := "2" Iniciado
     If Select(cAliasZZB) <> 0
+        // Cria o objeto fluig e o formulario
+        oFluig := NP3FLUIG():New()
+        oForms := JsonObject():New()
+        oJsonFld := JsonObject():New()
+        oJsonCst := JsonObject():New()
+        While (cAliasZZB)->(!Eof())
+            aConstraints := {}
+		    aAdd(aConstraints,JsonObject():new())
+		    aAdd(aConstraints,JsonObject():new())
+		    aAdd(aConstraints,JsonObject():new())
+		    aAdd(aFields,JsonObject():new())
+            // Solicitação
+            aConstraints[1]["field"] := "solicitação"
+            aConstraints[1]["initialValue"] := AllTrim((cAliasZZB)->ZZB_IDFLUI)
+            aConstraints[1]["finalValue"] := AllTrim((cAliasZZB)->ZZB_IDFLUI)
+            aConstraints[1]["type"] := 1
+            aConstraints[1]["likeSearch"] := "false"
+            // Item
+            aConstraints[2]["field"] := "Item"
+            aConstraints[2]["initialValue"] := (cAliasZZB)->ZZB_SEQ
+            aConstraints[2]["finalValue"] := (cAliasZZB)->ZZB_SEQ
+            aConstraints[2]["type"] := 1
+            aConstraints[2]["likeSearch"] := "false"
+            // Status
+            aConstraints[3]["field"] := "status"
+            aConstraints[3]["initialValue"] := Iif(cStatus<>"2","Finalizada","Iniciada")
+            aConstraints[3]["finalValue"] := Iif(cStatus<>"2","Finalizada","Iniciada")
+            aConstraints[3]["type"] := 1
+            aConstraints[3]["likeSearch"] := "false"
+            // Monta formulario
+            oFields := aFields
+            oConstraints := aConstraints
+            oForms["name"] := cDs 
+            oForms["fields"] := {}//oFields
+            oForms["constraints"] := oConstraints
+            (cAliasZZB)->(DbSkip())
+            // Envia para o fluig
+            If oFluig:Altera(oForms:ToJson())
+                // Posiciona na tarefa 
+                ZZB->(DbSetOrder(1)) //ZZB_FILIAL+ZZB_IDFLUI+ZZB_IDUMOV
+                If ZZB->(DbSeek(xFilial("ZZB")+(cAliasZZB)->ZZB_IDFLUI))
+                    While ZZB->(!EOF()) .AND. ZZB->(ZZB_FILIAL+ZZB_IDFLUI) == xFilial("ZZB")+(cAliasZZB)->ZZB_IDFLUI
+                        If ZZB->ZZB_SEQ == (cAliasZZB)->ZZB_SEQ .and. ZZB->ZZB_STATUS == Iif(cStatus<>"2","2","1" )
+                            If RecLock('ZZB',Inserção)
+                                ZZB->ZZB_STATUS := cStatus
+                                ZZB->(MsUnlock())
+                                // LOG
+                                oLog := NP3LOG01():New(AllTrim(ZZB->ZZB_IDFLUI)+AllTrim(ZZB->ZZB_SEQ),date(),SubStr(Time(),1,5),"AUTO","",Iif(cStatus<>"2","6","4" ))
+                                oLog:Grava()
+                            EndIf
+                        EndIf
+                        ZZB->(DbSkip())
+                    EndDo
+                EndIF
+            EndIf
+        EndDo
         (cAliasZZB)->(DbCloseArea())
     EndIf
 RETURN
@@ -271,6 +336,8 @@ METHOD RetFromUmovFi(cZZB_IDFLUI,cZZB_SEQ,cZZB_DTFIN,cZZB_HRFIN) CLASS NP3F0505
                         // LOG
                         oLog := NP3LOG01():New(AllTrim(ZZB->ZZB_IDFLUI)+AllTrim(ZZB->ZZB_SEQ),date(),SubStr(Time(),1,5),"AUTO","","05")
                         oLog:Grava()
+                        // Final Fluig
+                        ::RetToFluigIn("3")
                         exit
                     EndIf
                 EndIf
@@ -284,13 +351,7 @@ METHOD RetFromUmovFi(cZZB_IDFLUI,cZZB_SEQ,cZZB_DTFIN,cZZB_HRFIN) CLASS NP3F0505
 RETURN
 // Retorna para o fluig o fim da tarefa
 METHOD RetToFluigFi() CLASS NP3F0505
-    Local cAliasZZB := ::cAliasZZB
-    ::cQuery    := "%ZZB_DTFIN <> '' AND ZZB_HRFIN <> '' ZZB_STATUS = '2'%"// Status 2=Iniciado
-    ::Query()
-    // TODO: ZZB_STATUS := "3" Concluido
-    If Select(cAliasZZB) <> 0
-        (cAliasZZB)->(DbCloseArea())
-    EndIf
+    ::RetToFluigIn("3")
 RETURN
 // Query de todas as funções
 METHOD Query() CLASS NP3F0505

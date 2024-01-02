@@ -2245,6 +2245,15 @@ Conteudo: np3
 Descrição: Consumer Secret Fluig                                                 
 ]: #
 
+P3_FLAPIAL  
+
+[
+Filial: 
+Tipo: Caracter
+Conteudo: /api/public/ecm/dataset/datasets
+Descrição: Api de alteração do Fluig                                                
+]: #
+
 ## Tabela Genérica
 
 1Z-Catalogo de erros do umov
