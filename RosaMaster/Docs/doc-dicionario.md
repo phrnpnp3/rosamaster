@@ -1245,6 +1245,126 @@ USO
     -Browse:
 ]: #
 
+ZZA_HISTID 
+
+[
+CAMPO
+    -Tipo: 1-Caracter
+    -Tamanho: 20
+    -Decimal: 0
+    -Formato:
+    -Contexto: Real
+    -Propriedade: Alterar
+INFORMAÇÕES
+    -Titulo: historyId
+    -Descição: historyId
+    -Help:
+OPÇÕES
+    -Lista:
+    -Ini Padrão:
+    -Ini Browse:
+    -Modo Edição:
+    -Cons Padrão:
+VALIDAÇÕES
+    -Val Usuário:
+    -Val Sistema:
+    -Nivel:
+USO
+    -Obrigatório:
+    -Usado: Sim
+    -Browse:
+]: #
+
+ZZA_TASKID 
+
+[
+CAMPO
+    -Tipo: 1-Caracter
+    -Tamanho: 20
+    -Decimal: 0
+    -Formato:
+    -Contexto: Real
+    -Propriedade: Alterar
+INFORMAÇÕES
+    -Titulo: taskId
+    -Descição: taskId
+    -Help:
+OPÇÕES
+    -Lista:
+    -Ini Padrão:
+    -Ini Browse:
+    -Modo Edição:
+    -Cons Padrão:
+VALIDAÇÕES
+    -Val Usuário:
+    -Val Sistema:
+    -Nivel:
+USO
+    -Obrigatório:
+    -Usado: Sim
+    -Browse:
+]: #
+
+ZZA_CLINID 
+
+[
+CAMPO
+    -Tipo: 1-Caracter
+    -Tamanho: 20
+    -Decimal: 0
+    -Formato:
+    -Contexto: Real
+    -Propriedade: Alterar
+INFORMAÇÕES
+    -Titulo: clientId
+    -Descição: clientId
+    -Help:
+OPÇÕES
+    -Lista:
+    -Ini Padrão:
+    -Ini Browse:
+    -Modo Edição:
+    -Cons Padrão:
+VALIDAÇÕES
+    -Val Usuário:
+    -Val Sistema:
+    -Nivel:
+USO
+    -Obrigatório:
+    -Usado: Sim
+    -Browse:
+]: #
+
+ZZA_ACTIID 
+
+[
+CAMPO
+    -Tipo: 1-Caracter
+    -Tamanho: 20
+    -Decimal: 0
+    -Formato:
+    -Contexto: Real
+    -Propriedade: Alterar
+INFORMAÇÕES
+    -Titulo: activityId
+    -Descição: activityId
+    -Help:
+OPÇÕES
+    -Lista:
+    -Ini Padrão:
+    -Ini Browse:
+    -Modo Edição:
+    -Cons Padrão:
+VALIDAÇÕES
+    -Val Usuário:
+    -Val Sistema:
+    -Nivel:
+USO
+    -Obrigatório:
+    -Usado: Sim
+    -Browse:
+]: #
+
 ZZB_IDFLUI
 
 [
@@ -1954,8 +2074,8 @@ INFORMAÇÕES
     -Descição: Check
     -Help:
 OPÇÕES
-    -Lista: 1=Sim;2=Não
-    -Ini Padrão: "2"
+    -Lista: S=Sim;N=Nao
+    -Ini Padrão: "N"
     -Ini Browse:
     -Modo Edição:
     -Cons Padrão:
